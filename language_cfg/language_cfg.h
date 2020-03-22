@@ -20,7 +20,7 @@ class CFG {
         
     private:
         map<string, string> MINI_JAVA;
-        void create_language_map();
+        void create_language_map(string key="start");
 
 };
 

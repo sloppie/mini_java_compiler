@@ -26,6 +26,16 @@ class Queue {
             return value;
         }
 
+        vector<T> get_queue() {
+            vector<T> new_queue;
+
+            for(int i=lock; i<stack.size(); i++) {
+                new_queue.push_back(stack.at(i));
+            }
+
+            return new_queue;
+        }
+
         void enqueue(T value) {
             stack.push_back(value);
         }

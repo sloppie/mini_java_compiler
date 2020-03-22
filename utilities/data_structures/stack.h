@@ -17,6 +17,10 @@ class Stack {
             stack.push_back(new_val);
         }
 
+        vector<T> get_stack() {
+            return stack;
+        }
+
     private:
         vector<T> stack;
 
