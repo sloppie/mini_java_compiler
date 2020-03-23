@@ -111,36 +111,6 @@ string CFG::fetch_cfg(string key) {
 }
 
 
-bool CFG::is_word(const char* source_code) {
-    char letters[52] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k', 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U', 'v', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z'};
-    bool is_word = true;
-    bool toggle = true;
-    string word = "";
-    int CURSOR = 0;
-    // while(toggle) { // game loop
-    while(source_code[CURSOR] != '\0') {
-        bool found = false;
-        for(int i=0; i<52; i++) {
-            if(source_code[CURSOR] == letters[i]) {
-                found = true;
-                break;
-            }
-        }
-
-        if(!found) {
-            is_word = false;
-            cout<< "Unexpected symbol: '"<< source_code[CURSOR]<< "' in word: \""<< source_code<< endl;
-            break;
-        }
-
-        CURSOR++;
-    }
-    // }
-
-    return is_word;
-}
-
-
 bool CFG::is_package_name(const char* source_code, int *CURSOR) {
     bool is_pkg = true;
 
@@ -177,4 +147,160 @@ bool CFG::is_package_name(const char* source_code, int *CURSOR) {
     }
 
     return is_pkg;
+}
+
+
+bool CFG::is_word(const char* source_code) {
+    char letters[52] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k', 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U', 'v', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z'};
+    bool is_word = true;
+    bool toggle = true;
+    string word = "";
+    int CURSOR = 0;
+    // while(toggle) { // game loop
+    while(source_code[CURSOR] != '\0') {
+        bool found = false;
+        for(int i=0; i<52; i++) {
+            if(source_code[CURSOR] == letters[i]) {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            is_word = false;
+            cout<< "Unexpected symbol: '"<< source_code[CURSOR]<< "' in word: \""<< source_code<< endl;
+            break;
+        }
+
+        CURSOR++;
+    }
+    // }
+
+    return is_word;
+}
+
+
+bool CFG::is_int(const char* source_code) {
+    bool integer = true;
+    int CURSOR = 0;
+
+    if(source_code[CURSOR] == '-') { // offsets the '-' sign
+        CURSOR++;
+    }
+
+    if(source_code[CURSOR] != '0') {
+        CURSOR++;
+        char numbers[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+
+        while(source_code[CURSOR] != '\0') {
+            bool found = false;
+
+            for(int i=0; i<10; i++) {
+                if(numbers[i] == source_code[CURSOR]) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if(!found) {
+                integer = false;
+                break;
+            }
+
+            CURSOR++;
+        }
+
+    } else if(source_code[CURSOR] == '0' && source_code[CURSOR + 1] == '\0') {
+        // pass
+    } else {
+        integer = false;
+    }
+
+    return integer;
+}
+
+
+bool CFG::is_decimal(const char* source_code) {
+    bool decimal = true;
+    bool point_found = false;
+    bool numbers_after_point = false;
+    int CURSOR = 0;
+    char numbers[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
+
+    if(source_code[CURSOR] == '-') {
+        CURSOR++;
+    }
+
+    if(source_code[CURSOR] != '0') {
+        CURSOR++;
+
+        while(source_code[CURSOR] != '\0') {
+            bool found = false;
+
+            if(!point_found) {
+                if(source_code[CURSOR] == '.') {
+                    point_found = true;
+                    CURSOR++;
+                    continue;
+                }
+            }
+
+            for(int i=0; i<10; i++) {
+
+                if(source_code[CURSOR] == numbers[i]) {
+                    found = true;
+
+                    if(point_found) {
+                        numbers_after_point = true;
+                    }
+
+                    break;
+                }
+
+
+            }
+
+            if(!found) {
+                decimal = false;
+                break;
+            }
+
+            CURSOR++;
+        }
+
+    } else if(source_code[CURSOR] == '0' && source_code[CURSOR + 1] == '.') {
+        CURSOR += 2;
+        point_found = true;
+
+        while(source_code[CURSOR] != '\0') {
+            bool found = false;
+
+            for(int i=0; i<10; i++) {
+
+                if(source_code[CURSOR] == numbers[i]) {
+                    found = true;
+                    if(point_found) {
+                        numbers_after_point = true;
+                    }
+
+                    break;
+                }
+
+
+            }
+
+            if(!found) {
+                decimal = false;
+                break;
+            }
+
+            CURSOR++;
+        }
+    } else {
+        decimal = false;
+    }
+
+    cout<< (decimal&& point_found&& numbers_after_point) << endl;
+
+    return (decimal && point_found && numbers_after_point);
 }
