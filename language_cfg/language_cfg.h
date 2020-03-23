@@ -17,10 +17,19 @@ using namespace std;
 class CFG {
     public:
         CFG();
+        string fetch_cfg(string key);
+        Queue<string*>* create_language_map(string key="start");
+
+        bool is_package_name(const char*, int*);
+
+        bool is_word(const char*);
+        // bool is_anything(const char*, int*, string);
+        // bool is_number(const char*, int*, string);
+        // bool is_float(const char*, int*, string);
+        // bool is_anything(const char*, int*, string);
         
     private:
         map<string, string> MINI_JAVA;
-        void create_language_map(string key="start");
 
 };
 
