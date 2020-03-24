@@ -14,6 +14,8 @@ int main() {
     string int_tests[][2] = {{"0", INT}, {"12", INT}, {"0.1", NOT_INT}, {"0230", NOT_INT}, {"230", INT}, {"2000", INT}, {"23e4", NOT_INT}};
     string double_tests[][2] = {{"0.0", FLOAT}, {"1.3456777", FLOAT}, {"1.2.3", NOT_FLOAT}, {"1.", NOT_FLOAT}, {"2344.03", FLOAT}, {"234.e45", NOT_FLOAT}, {"0", NOT_FLOAT}};
     
+    cout<< "************** INT TEST ********************"<< endl;
+
     for(int i=0; i<7; i++) {
         string answer = (mini_java.is_int(int_tests[i][0].c_str()))? INT: NOT_INT;
 
@@ -25,6 +27,10 @@ int main() {
             cout<< "\""<< int_tests[i][0]<< "\" failed the int test"<< endl;
         }
     }
+
+    cout<< endl;
+    cout<< "************** FLOAT TEST ******************"<< endl;
+    cout<< endl;
 
     for(int i=0; i<7; i++) {
         string answer = (mini_java.is_decimal(double_tests[i][0].c_str()))? FLOAT: NOT_FLOAT;

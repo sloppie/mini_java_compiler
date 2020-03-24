@@ -23,10 +23,8 @@ class CFG {
         bool is_package_name(const char*, int*);
 
         bool is_word(const char*);
-        // bool is_anything(const char*, int*, string);
         bool is_int(const char*);
         bool is_decimal(const char*);
-        // bool is_float(const char*, int*, string);
         // bool is_anything(const char*, int*, string);
         
     private:

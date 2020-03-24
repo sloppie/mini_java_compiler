@@ -300,7 +300,5 @@ bool CFG::is_decimal(const char* source_code) {
         decimal = false;
     }
 
-    cout<< (decimal&& point_found&& numbers_after_point) << endl;
-
     return (decimal && point_found && numbers_after_point);
 }
