@@ -168,7 +168,7 @@ bool CFG::is_word(const char* source_code) {
 
         if(!found) {
             is_word = false;
-            cout<< "Unexpected symbol: '"<< source_code[CURSOR]<< "' in word: \""<< source_code<< endl;
+            // cout<< "Unexpected symbol: '"<< source_code[CURSOR]<< "' in word: \""<< source_code<< endl;
             break;
         }
 

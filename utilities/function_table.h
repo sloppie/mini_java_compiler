@@ -16,15 +16,15 @@ class FunctionTable {
         FunctionTable();
         void add_member(string, string, string, string, string);
         void add_param_details(string);
-        string* find(string);
-        params_queue find_param_details(string);
         void scan_function(string);
+        string *find(string);
+        params_queue find_param_details(string);
 
     private:
-        vector<string*> FUNCTION_TABLE;
+        vector<string *> FUNCTION_TABLE;
         vector<params_queue> CORRESSPONDING_PARAMS;
-        string* undefined;
-        params_queue undefined_params;
+        string *undefined;
+        params_queue undefined_param;
 };
 
 #endif

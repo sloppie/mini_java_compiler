@@ -6,7 +6,7 @@
 
 using namespace std;
 
-int main() {
+int lexer_tests() {
     bool assert_package(string, string);
 
     cout<< "running tests...\n"<< endl;

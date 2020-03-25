@@ -9,7 +9,7 @@
 
 using namespace std;
 
-int main() {
+int lexer_tests() {
     CFG mini_java;
     string int_tests[][2] = {{"0", INT}, {"12", INT}, {"0.1", NOT_INT}, {"0230", NOT_INT}, {"230", INT}, {"2000", INT}, {"23e4", NOT_INT}};
     string double_tests[][2] = {{"0.0", FLOAT}, {"1.3456777", FLOAT}, {"1.2.3", NOT_FLOAT}, {"1.", NOT_FLOAT}, {"2344.03", FLOAT}, {"234.e45", NOT_FLOAT}, {"0", NOT_FLOAT}};

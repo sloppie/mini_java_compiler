@@ -12,7 +12,7 @@ FunctionTable::FunctionTable() {
     up[0] = "undefined";
     up[1] = "undefined";
     up[2] = "undefined";
-    undefined_params.enqueue(up);
+    undefined_param.enqueue(up);
 }
 
 void FunctionTable::add_member(string value, string return_type, string context, string parameter_block, string block_code) {
@@ -95,7 +95,7 @@ void FunctionTable::add_param_details(string parameter_block) {
             cout<< "Invalid Paramter definition for function: \""<< function_name<< "\""<< "\n    EXPECTED a name after type: \""<< parameter_type<< "\""<< endl;
         } else {
             params_found = false;
-            cout<< "Invalid Paramter definition for function: \""<< function_name<< "\""<< "\n    EXPECTED a name after type: \""<< parameter_type<< "\""<< endl;
+            // cout<< "Invalid Paramter definition for function: \""<< function_name<< "\""<< "\n    EXPECTED a name after type: \""<< parameter_type<< "\""<< endl;
         }
 
         CURSOR++;
@@ -104,7 +104,7 @@ void FunctionTable::add_param_details(string parameter_block) {
     if(params_found) {
         CORRESSPONDING_PARAMS.push_back(new_param);
     } else {
-        CORRESSPONDING_PARAMS.push_back(undefined_params);
+        CORRESSPONDING_PARAMS.push_back(undefined_param);
     }
 }
 
@@ -135,7 +135,7 @@ params_queue FunctionTable::find_param_details(string key) {
         }
     }
 
-    params_queue answer = (found)? CORRESSPONDING_PARAMS.at(index): undefined_params;
+    params_queue answer = (found)? CORRESSPONDING_PARAMS.at(index): undefined_param;
 
     return answer;
 }
@@ -148,11 +148,12 @@ void FunctionTable::scan_function(string source_code) {
     bool rt_found = false;
     string function_name = "";
     bool fn_found = false;
-    string parameter_code = Lexer(source_code).find_bracketed_code('(');
-    string block_code = Lexer(source_code).find_bracketed_code('{');
-
-    const char* sc = source_code.c_str();
     int CURSOR = 0;
+    string parameter_code = Lexer::find_bracketed_code(source_code, '(', CURSOR);
+    string block_code = Lexer::find_bracketed_code(source_code, '{', CURSOR);
+
+    CURSOR = 0;
+    const char* sc = source_code.c_str();
 
     //access modifier
     while(sc[CURSOR] != ' ') {
@@ -162,7 +163,11 @@ void FunctionTable::scan_function(string source_code) {
 
     if(access_modifier.compare("public") == 0 || access_modifier.compare("private") == 0|| access_modifier.compare("protected") == 0) {
         am_found = true;
+    } else {
+        cout<< "INVALID access modifier \""<< access_modifier<< "\""<< endl;
     }
+
+    cout<< access_modifier<< endl;
 
     while(sc[CURSOR] == ' ') {
         CURSOR++;

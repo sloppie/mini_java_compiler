@@ -1,4 +1,4 @@
-#include "symbol_table.h"
+#include "./symbol_table.h"
 
 SymbolTable::SymbolTable() {
     UNDEFINED = new string[3];
@@ -9,7 +9,7 @@ SymbolTable::SymbolTable() {
 }
 
 void SymbolTable::add_member(string value, string type, string context) {
-    string* new_member = new[3] string;
+    string* new_member = new string[3];
     new_member[0] = value;
     new_member[1] = type;
     new_member[2] = context;
