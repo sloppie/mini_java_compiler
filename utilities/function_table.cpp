@@ -1,4 +1,5 @@
 #include "function_table.h"
+#include "../lexer/lexer.h"
 
 FunctionTable::FunctionTable() {
     // default undefined function details
@@ -85,8 +86,8 @@ void FunctionTable::add_param_details(string parameter_block) {
 
         if(type_found && (parameter_name.compare("") != 0)) {
             string* param_added = new string[3];
-            param_added[0] = parameter_type;
-            param_added[1] = parameter_name;
+            param_added[0] = parameter_name;
+            param_added[1] = parameter_type;
             param_added[2] = function_name;
 
             new_param.enqueue(param_added);
@@ -138,6 +139,26 @@ params_queue FunctionTable::find_param_details(string key) {
     params_queue answer = (found)? CORRESSPONDING_PARAMS.at(index): undefined_param;
 
     return answer;
+}
+
+
+string FunctionTable::create_function_template(string function_name) {
+    params_queue function_params = find_param_details(function_name);
+    string function_template = function_name;
+    function_template += "(";
+
+    for(int i=0; i<function_params.get_init_queue().size(); i++) {
+
+        if(i != 0) 
+            function_template += ", ";
+
+        function_template += function_params.get_init_queue().at(i)[1];
+        
+    }
+
+    function_template += ")";
+
+    return function_template;
 }
 
 

@@ -6,7 +6,6 @@
 
 #include "../types.h"
 #include "data_structures/queue.h"
-#include "../lexer/lexer.h"
 #include "../language_cfg/language_cfg.h"
 
 using namespace std;
@@ -19,6 +18,7 @@ class FunctionTable {
         void scan_function(string);
         string *find(string);
         params_queue find_param_details(string);
+        string create_function_template(string);
 
     private:
         vector<string *> FUNCTION_TABLE;
