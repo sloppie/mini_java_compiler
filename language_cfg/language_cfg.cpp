@@ -270,7 +270,7 @@ bool CFG::is_decimal(const char* source_code) {
 
     } else if(source_code[CURSOR] == '0' && source_code[CURSOR + 1] == '.') {
         CURSOR += 2;
-        point_found = true;
+        point_found = true; 
 
         while(source_code[CURSOR] != '\0') {
             bool found = false;
@@ -301,4 +301,42 @@ bool CFG::is_decimal(const char* source_code) {
     }
 
     return (decimal && point_found && numbers_after_point);
+}
+
+
+bool CFG::is_bool(const char* source_code) {
+    bool bool_found = false;
+    string fls = "false";
+    string tru = "true";
+
+    bool_found = (fls.compare(source_code) == 0) || (tru.compare(source_code) == 0) || (is_condition(source_code)); 
+
+    return bool_found;
+}
+
+
+bool CFG::is_string(const char* source_code) {
+    bool opening_qmark = false;
+    bool string_found = false;
+    int CURSOR = 0;
+
+    while(source_code[CURSOR] != '\0') {
+        if(!opening_qmark) {
+            if(source_code[CURSOR] == '"')
+                opening_qmark = true;
+        } else {
+            if(source_code[CURSOR] == '"' && source_code[CURSOR + 1] == '\0')
+                string_found = true;
+        }
+
+        CURSOR++;
+    }
+
+    return string_found;
+} 
+
+
+bool CFG::is_condition(const char* cond) {
+
+    return true;
 }

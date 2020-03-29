@@ -17,26 +17,32 @@ class Lexer {
     public:
         Lexer(string, SymbolTable*, PackageTable*, FunctionTable*);
         static string find_bracketed_code(string, char, int&);
+
+        bool is_function_call(string);
+        bool is_equation_token(string);
+
+        void unpack_if(string);
+        void unpack_if(string, int&);
+        void unpack_while(string);
+        void unpack_condition(string);
         void unpack_block(string);
-        // void unpack_if(int&);
-        // void unpack_while(int&);
         void unpack_line(string);
-        // void unpack_variable_dec(int&);
         void unpack_arithmetic_eq(Queue<string>, string);
         void unpack_function_call(string);
-        bool is_function_call(string);
 
-        bool is_equation_token(string);
+        vector<string> break_down_condition(const char*);
 
     private:
         string source_code;
         int CURSOR;
         string EQUATION_TOKENS[4] = {"*", "/", "+", "-"};
         int EQ_TOKEN_SIZE = 4;
+        int LINE_NUMBER = 0;
 
         SymbolTable* SYMBOL_TABLE;
         PackageTable* PACKAGE_TABLE;
         FunctionTable* FUNCTION_TABLE;
+        vector<string> CONTEXT;
 };
 
 #endif

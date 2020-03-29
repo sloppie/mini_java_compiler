@@ -26,6 +26,7 @@ int line_unpack_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE
         lexical_analyser.unpack_line(lines[i]);
     }
 
+    lexical_analyser.unpack_if("if(myVar == myVar) {int i = 0;}");
     return 0;
 
 }

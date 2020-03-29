@@ -49,16 +49,140 @@ string Lexer::find_bracketed_code(string source_code, char bracket_type, int& CU
     return code;
 }
 
+void Lexer::unpack_if(string code) {
+    int CURSOR = 0;
+    const char* if_code = code.c_str();
+    bool opening_term = false;
+    string term = "";
+
+    // create Node data structure to hold the data for the parse tree
+
+    while(if_code[CURSOR] != '\0') {
+        term += if_code[CURSOR];
+
+        if(term.compare("if") == 0) {
+            // handle adde=ing to Node tree
+            cout<< "If spotted"<< endl;
+            opening_term = true;
+            break;
+        }
+
+        CURSOR++;
+    }
+
+    if(opening_term) {
+        string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
+        string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
+        unpack_condition(condition);
+    cout<< "Got past unpack condition"<< endl;
+        unpack_block(block_code);
+    }
+
+
+    term = ""; // reset term to look for an 'else' 
+
+    int RESET_CURSOR = CURSOR;
+    bool if_body_ended = false;
+    //
+    while(!if_body_ended) {
+
+        // eliminate white space
+        while(if_code[CURSOR] != '\0' && (if_code[CURSOR] == ' ' || if_code[CURSOR] == '\n')) {
+            
+            if(if_code[CURSOR] == '\n') {
+                // handle new line
+            }
+
+            CURSOR++;
+        }
+
+        if(if_code[CURSOR] != '\0') {
+            bool else_found = false;
+            
+            while(if_code[CURSOR] != '\0' && if_code[CURSOR] != ' ') {
+                term = if_code[CURSOR];
+                CURSOR++;
+            }
+            if(term.compare("else") == 0) {
+                // eliminate white space
+                string second_term = "";
+                while(if_code[CURSOR] == ' ') {
+                    CURSOR++;
+                }
+
+                RESET_CURSOR = CURSOR;
+
+                while(if_code[CURSOR] != ' ' && if_code[CURSOR] != ')') {
+                    second_term += if_code[CURSOR];
+                }
+
+                if(second_term.compare("if") == 0) {
+                    CURSOR = RESET_CURSOR;
+                    unpack_if(code, CURSOR);
+                } else {
+                    Lexer::find_bracketed_code(code, '{', CURSOR);
+                }
+
+            } else {
+                if_body_ended = true;
+            }
+
+        } else {
+            if_body_ended = true;
+        }
+    }
+
+
+    //
+}
+
+
+void Lexer::unpack_if(string code, int& CURSOR) {
+    const char* if_code = code.c_str();
+    bool opening_term = false;
+    string term = "";
+
+    // create Node data structure to hold the data for the parse tree
+
+    while(if_code[CURSOR] != '\0') {
+        term += if_code[CURSOR];
+
+        if(term.compare("if") == 0) {
+            // handle token add
+            cout<< "If found"<< endl;
+            break;
+        }
+
+        CURSOR++;
+    }
+
+    if(opening_term) {
+        string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
+        string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
+        unpack_condition(condition);
+        unpack_block(block_code);
+    }
+
+}
+
+
+void Lexer::unpack_while(string while_code) {
+
+}
+
 
 void Lexer::unpack_block(string sample_code) {
     const char* block_code = sample_code.c_str();
-    int BLOCK_CURSOR = 0;
+    int BLOCK_CURSOR = 1;
     string token_found = "";
     
     while(block_code[BLOCK_CURSOR] != '\0') {
 
-        if(block_code[BLOCK_CURSOR] == ' ') {
-            
+        if(block_code[BLOCK_CURSOR] == ' ') {// handle new line, tabs and multiple spaces!!
+            if(block_code[BLOCK_CURSOR + 1] == ' ' && token_found.compare("") == 0) {
+                BLOCK_CURSOR += 2;
+                continue;
+            }
             if(token_found.compare("if") == 0) {
                 // handle if block
             } else if(token_found.compare("while") == 0) {
@@ -67,11 +191,11 @@ void Lexer::unpack_block(string sample_code) {
                 // handle statement
                 string line = "";
                 
-                while(block_code[CURSOR] != ';') {
-                    if(block_code[CURSOR] == '\n') {
+                while(block_code[BLOCK_CURSOR] != ';') {
+                    if(block_code[BLOCK_CURSOR] == '\n') {
                         cout<< "Expected a ';' at the end of line"<< line<< endl;
                     } else {
-                        line += block_code[CURSOR];
+                        line += block_code[BLOCK_CURSOR];
                     }
 
                     BLOCK_CURSOR++;
@@ -80,6 +204,8 @@ void Lexer::unpack_block(string sample_code) {
                 unpack_line(line);
             }
 
+        } else {
+            token_found += block_code[BLOCK_CURSOR];
         }
 
         BLOCK_CURSOR++;
@@ -541,5 +667,214 @@ bool Lexer::is_function_call(string current) {
         return false;
     else
         return closing_bracket && opening_bracket;
+
+}
+
+// This does not allow for nested conditions
+void Lexer::unpack_condition(string source_code) {
+    const char* condition = source_code.c_str();
+    Queue<string> condition_queue;
+    int CURSOR = 1;
+    CFG cfg;
+
+    // split conditions
+    string condition_found = "";
+
+    // offload conditions
+    while(condition[CURSOR] != '\0') {
+        
+        if(condition[CURSOR] == '&' || condition[CURSOR] == '|') {
+
+            if(condition[CURSOR] == '&') {
+ 
+                if(condition[CURSOR + 1] == '&') {
+                    condition_queue.enqueue(condition_found);
+                    condition_queue.enqueue("&&");
+                    condition_found = "";
+                } else {
+                    cout<< "Expected '&&' as a connector after condition: "<< condition<< endl;
+                }
+
+            } else {// handle or connector
+ 
+                if(condition[CURSOR + 1] == '|') {
+                    condition_queue.enqueue(condition_found);
+                    condition_queue.enqueue("||");
+                    condition_found = "";
+                } else {
+                    cout<< "Expected '||' as a connector after condition: "<< condition<< endl;
+                }
+
+            }
+
+            CURSOR += 2;
+            continue;
+        } else {
+
+            if(condition[CURSOR] != '(') {
+                if(condition[CURSOR] != ')') {
+                    if(condition[CURSOR] != ' ' && condition_found.compare("") == 0) {
+                        condition_found += condition[CURSOR];
+                    } else if(condition_found.compare("") != 0)
+                        condition_found += condition[CURSOR];
+                } else {
+                    if(condition_found.compare("") != 0) {
+                        condition_queue.enqueue(condition_found);
+                    }
+                }
+
+            } else {
+                cout<< "Nested conditions not allowed in this mini java... Skipping over nested condition"<< endl;
+                
+                while(condition[CURSOR] != ')') {
+                    CURSOR++;
+                }
+
+                CURSOR++;
+                continue;
+            }
+        }
+        
+        CURSOR++;
+    }
+
+    // verify variables
+    for(string conditions: condition_queue.get_init_queue()) {
+        
+        string cnd = "";
+
+        cout<< "CURRENT TOKEN: "<< conditions<< endl;
+        if(conditions.compare("&&") != 0 && conditions.compare("||") != 0) {
+            break_down_condition(conditions.c_str());
+        }
+
+    }
+
+    // push in token stream
+
+}
+
+
+// utiltiies
+vector<string> Lexer::break_down_condition(const char* condition) {
+    cout<< "Breaking down: "<< condition<< endl;
+    CFG cfg;
+    char COMPARATOR_TOKENS[] = {'>', '<', '=', '!'};
+
+    int CURSOR = 0;
+
+    vector<string> conditions;
+    string last_cond = "";
+    string last_cond_type = "";
+    
+    while(condition[CURSOR] != '\0') {
+        
+        if(condition[CURSOR] != ' ') {
+            bool comp_token_found = false;
+            
+            for(int i=0; i<4; i++) { // searches for a comparisson symbol eg: '>', '<', '!' and their equivalent 'or equal to:' 
+
+                if(!comp_token_found) {
+                    comp_token_found = COMPARATOR_TOKENS[i] == condition[CURSOR];
+                    if(comp_token_found) {
+                        break;
+                    }
+                }
+
+            }
+
+            if(comp_token_found) {
+
+                if(last_cond.compare("") != 0) {
+
+                    if(is_function_call(last_cond)) {
+                        unpack_function_call(last_cond);
+                        cout<< "Token added -> "<< last_cond<< endl;
+                        last_cond_type = "variable";
+                    } else if(cfg.is_word(last_cond.c_str())) {
+                        string* param = SYMBOL_TABLE->find(last_cond);
+
+                        if(param[0].compare("undefined") != 0) {
+                            cout<< "Token added: "<< last_cond<< endl;
+                        } else {
+                            cout<< "Token: '"<< last_cond<<"' added as \"undefined_token\""<< endl;
+                        }
+
+                        last_cond_type = "variable";
+
+                    } else {
+
+                        if(cfg.is_condition(last_cond.c_str())) {
+                            cout<< last_cond<< " token added"<< endl;
+                            last_cond_type = "variable";
+                        } else {
+                            cout<< "INVALID token: "<< last_cond<< " passed as a condition param"<< endl;
+                        }
+                    }
+
+                    conditions.push_back(last_cond);
+                    last_cond = "";
+                }
+
+                if(condition[CURSOR + 1] == '=') {
+                    string comparator_token = "";
+                    comparator_token += condition[CURSOR];
+                    comparator_token += condition[CURSOR + 1];
+
+                    if(conditions.size() > 0) { // checks condition progression
+
+                        if(last_cond_type.compare("variable") == 0) {
+                            cout<< "Comparator tokken added: "<< comparator_token<< endl;
+                            conditions.push_back(comparator_token);
+                        } else {
+                            cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
+                        }
+
+                    } else {
+                        cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
+                    }
+
+                    CURSOR++;
+                } else {
+                    if(condition[CURSOR + 1] != ' ') {
+                        string comparator_token = "";
+                        comparator_token += condition[CURSOR];
+                        comparator_token += condition[CURSOR + 1];
+                        cout<< "invalid token progression: \""<< comparator_token<< "\""<< endl;
+                        CURSOR++;
+                    }
+                }
+
+            } else {
+                last_cond += condition[CURSOR];
+            }
+
+        } else {
+            while(condition[CURSOR + 1] ==  ' ') {
+
+                CURSOR++;
+            }
+
+            // continue;
+        }
+
+        CURSOR++;
+    }
+
+    // the while loop does not cater for adding of the last condition
+    if(last_cond.compare("") != 0) {
+        if (!is_function_call(last_cond) && !cfg.is_word(last_cond.c_str())){
+            cout<< "Invalid token '"<< last_cond<<"'at end of condition"<< endl;
+        } else {
+            conditions.push_back(last_cond);
+            cout<< "Token added -> "<< last_cond<< endl;
+        }
+    }
+
+    // for(string con: conditions) {
+        // cout<< "COndition"<< con<< endl;
+    // }
+
+    return conditions;
 
 }

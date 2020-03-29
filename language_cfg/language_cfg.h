@@ -25,6 +25,9 @@ class CFG {
         bool is_word(const char*);
         bool is_int(const char*);
         bool is_decimal(const char*);
+        bool is_bool(const char*);
+        bool is_string(const char*);
+        bool is_condition(const char*);
         // bool is_anything(const char*, int*, string);
         
     private:
