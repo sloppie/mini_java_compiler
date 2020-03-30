@@ -20,7 +20,7 @@ class CFG {
         string fetch_cfg(string key);
         Queue<string*>* create_language_map(string key="start");
 
-        bool is_package_name(const char*, int*);
+        bool is_package_name(const char*);
 
         bool is_word(const char*);
         bool is_int(const char*);

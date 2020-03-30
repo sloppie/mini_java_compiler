@@ -29,6 +29,8 @@ class Lexer {
         bool is_function_call(string);
         bool is_equation_token(string);
 
+        void unpack_package(string, string);
+        bool package_parser(string);
         void unpack_class(string);
         void unpack_if(string);
         void unpack_if(string, int&);

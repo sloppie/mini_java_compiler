@@ -46,6 +46,104 @@ string Lexer::find_bracketed_code(string source_code, char bracket_type, int& CU
 }
 
 
+void Lexer::unpack_package(string source_code, string package_type) {
+
+    if(package_type.compare("package") == 0)
+        cout<< "Unpacking package declaration..."<< endl;
+    else
+        cout<< "Unpacking import declaration..."<< endl;
+
+    int CURSOR = 0;
+    const char* code = source_code.c_str();
+    string term_found = "";
+    bool opening_term_parsed = false;
+    string package_name = "";
+    int BRANCH;
+    CFG mini_java_cfg;
+
+    while(code[CURSOR] != '\n') {
+
+        if(!(term_found.compare("") == 0 && (code[CURSOR] == ' ' || code[CURSOR] == '\t'))) {
+            
+            if(code[CURSOR] == ' ') {
+
+                if(term_found.compare(package_type) == 0) {
+                    opening_term_parsed = true;
+                    CURSOR++;
+                    
+                    while(code[CURSOR] != ';' && code[CURSOR] != ' ' && code[CURSOR] != '\0' && code[CURSOR] != '\n') {
+                        package_name += code[CURSOR];
+
+                        CURSOR++;                        
+                    }
+
+                    cout<< "PACKAGE NAME: "<< package_name<< endl;
+                    // package_name += ';';
+            
+                    bool is_package = (mini_java_cfg.is_package_name(package_name.c_str()));
+
+                    if(is_package) {
+                        cout<< "Valid package name identified: \""<< package_name<< "\""<< endl;
+                    } else {
+                        cout<< "Invalide package name: \""<< package_name<< "\""<< endl;
+                    }
+
+                    if(code[CURSOR] == ' ') { // whitespace remover
+
+                        while(code[CURSOR] == ' ') {
+                            CURSOR++;
+                        }
+
+                    }
+
+                    if(code[CURSOR] == '\n') {
+                        cout<< "expected ';' before moving on to a new line"<< endl;
+                    } else {
+                        // handle token add
+                    }
+
+                    break;
+                } else {
+
+                    if(package_type.compare("package") == 0)
+                        cout<< "Expected the token \"package\""<< endl;
+                    else {
+                        // CURSOR = BRANCH;
+                    }
+
+                    opening_term_parsed = true;
+
+                    break;
+                }
+
+            } else {
+
+                if(term_found.compare("") == 0) // create a branch
+                    BRANCH = CURSOR;
+
+                term_found += code[CURSOR];
+            }
+
+        }
+
+        CURSOR++;
+    }
+
+    if(!opening_term_parsed) {
+        cout<< "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;"<< endl;
+    }
+
+}
+
+
+bool Lexer::package_parser(string code) {
+    const char* package_code = code.c_str();
+    int CURSOR = 0;
+
+    return false;
+}
+
+
 void Lexer::unpack_class(string code) {
     cout<< "Unpacking class..."<< endl;
     string access_modifier = "";
