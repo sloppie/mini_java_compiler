@@ -16,7 +16,7 @@ FunctionTable::FunctionTable() {
     undefined_param.enqueue(up);
 }
 
-void FunctionTable::add_member(string value, string return_type, string context, string parameter_block, string block_code) {
+void FunctionTable::add_member(string value, string return_type, string context, string parameter_block) {
     string* new_member = new string[3];
     new_member[0] = value;
     new_member[1] = return_type;
@@ -162,18 +162,17 @@ string FunctionTable::create_function_template(string function_name) {
 }
 
 
-void FunctionTable::scan_function(string source_code) {
+void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
     string access_modifier = "";
     bool am_found = false;
     string return_type = "";
     bool rt_found = false;
     string function_name = "";
     bool fn_found = false;
-    int CURSOR = 0;
-    string parameter_code = Lexer::find_bracketed_code(source_code, '(', CURSOR);
-    string block_code = Lexer::find_bracketed_code(source_code, '{', CURSOR);
+    int CURSOR = BLOCK_CURSOR;
+    string parameter_code = Lexer::find_bracketed_code(source_code, '(', BLOCK_CURSOR);
+    // string block_code = Lexer::find_bracketed_code(source_code, '{', CURSOR);
 
-    CURSOR = 0;
     const char* sc = source_code.c_str();
 
     //access modifier
@@ -225,7 +224,7 @@ void FunctionTable::scan_function(string source_code) {
     }
 
     if(am_found && rt_found && fn_found) {
-        add_member(function_name, return_type, access_modifier, parameter_code, block_code);
+        add_member(function_name, return_type, access_modifier, parameter_code);
     } else {
         if(!am_found) {
             cout<< "invalid access modifier for the function: \""<< function_name<< endl;

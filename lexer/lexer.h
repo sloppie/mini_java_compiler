@@ -15,14 +15,24 @@ using namespace std;
 
 class Lexer { 
     public:
-        Lexer(string, SymbolTable*, PackageTable*, FunctionTable*);
+        Lexer(
+            string source_code,
+            SymbolTable *SYMBOL_TABLE,
+            PackageTable *PACKAGE_TABLE,
+            FunctionTable *FUNCTION_TABLE) : source_code(source_code), 
+                                             SYMBOL_TABLE(SYMBOL_TABLE),
+                                             PACKAGE_TABLE(PACKAGE_TABLE),
+                                             FUNCTION_TABLE(FUNCTION_TABLE) {}
+
         static string find_bracketed_code(string, char, int&);
 
         bool is_function_call(string);
         bool is_equation_token(string);
 
+        void unpack_class(string);
         void unpack_if(string);
         void unpack_if(string, int&);
+        void unpack_if(int&, string);
         void unpack_while(string);
         void unpack_condition(string);
         void unpack_block(string);

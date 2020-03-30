@@ -13,14 +13,14 @@ using namespace std;
 class FunctionTable {
     public:
         FunctionTable();
-        void add_member(string, string, string, string, string);
+        void add_member(string, string, string, string);
         void add_param_details(string);
-        void scan_function(string);
+        void scan_function(string, int&);
         string *find(string);
         params_queue find_param_details(string);
         string create_function_template(string);
 
-    private:
+    private: 
         vector<string *> FUNCTION_TABLE;
         vector<params_queue> CORRESSPONDING_PARAMS;
         string *undefined;

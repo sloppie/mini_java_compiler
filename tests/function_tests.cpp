@@ -17,7 +17,8 @@ int function_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, S
     string paramter_code = Lexer::find_bracketed_code(sample_function, '(', CURSOR);
     string block_code = Lexer::find_bracketed_code(sample_function, '{', CURSOR);
 
-    FUNCTION_TABLE->scan_function(sample_function);
+    CURSOR = 0;
+    FUNCTION_TABLE->scan_function(sample_function, CURSOR);
 
     params_queue function_param = FUNCTION_TABLE->find_param_details("main");
 

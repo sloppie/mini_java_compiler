@@ -26,7 +26,8 @@ int line_unpack_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE
         lexical_analyser.unpack_line(lines[i]);
     }
 
-    lexical_analyser.unpack_if("if(myVar == myVar) {int i = 0;}");
+    // lexical_analyser.unpack_while("while(myVar == myVar) {\n    int i = 0;\n    if(secondVar == secondVar) {\n        int x = 0;\n    }\n}");
+    lexical_analyser.unpack_class("public class ClassOne {\n    public int myInt = 0;\n}");
     return 0;
 
 }
