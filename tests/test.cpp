@@ -20,9 +20,9 @@ int main() {
     SymbolTable* SYMBOL_TABLE = new SymbolTable();
     PackageTable* PACKAGE_TABLE = new PackageTable();
 
-    function_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
-    line_unpack_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
-    condition_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
+    // function_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
+    // line_unpack_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
+    // condition_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
     lexer_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
 
     return 0;

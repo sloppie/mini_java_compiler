@@ -25,6 +25,7 @@ class Lexer {
                                              FUNCTION_TABLE(FUNCTION_TABLE) {}
 
         static string find_bracketed_code(string, char, int&);
+        void scan_code();
 
         bool is_function_call(string);
         bool is_equation_token(string);

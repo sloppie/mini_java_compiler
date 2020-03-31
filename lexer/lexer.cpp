@@ -1,5 +1,13 @@
 #include "lexer.h"
 
+
+void Lexer::scan_code() {
+    unpack_package(source_code, "package");
+    unpack_package(source_code, "import");
+    unpack_class(source_code);
+}
+
+
 string Lexer::find_bracketed_code(string source_code, char bracket_type, int& CURSOR) {
     string code = "";
     char OPENING = bracket_type;
@@ -53,13 +61,18 @@ void Lexer::unpack_package(string source_code, string package_type) {
     else
         cout<< "Unpacking import declaration..."<< endl;
 
-    int CURSOR = 0;
+    // int CURSOR = 0;
     const char* code = source_code.c_str();
     string term_found = "";
     bool opening_term_parsed = false;
     string package_name = "";
     int BRANCH;
     CFG mini_java_cfg;
+
+    while(code[CURSOR] == '\n') {
+        // handle new line
+        CURSOR++;
+    }
 
     while(code[CURSOR] != '\n') {
 
@@ -100,6 +113,7 @@ void Lexer::unpack_package(string source_code, string package_type) {
                         cout<< "expected ';' before moving on to a new line"<< endl;
                     } else {
                         // handle token add
+                        CURSOR++;
                     }
 
                     break;
@@ -149,7 +163,7 @@ void Lexer::unpack_class(string code) {
     string access_modifier = "";
     string class_name = "";
     string class_token = "";
-    int CURSOR = 0;
+    // int CURSOR = 0;
 
     string term_found = "";
 
@@ -240,11 +254,11 @@ void Lexer::unpack_class(string code) {
                     bool is_func = false;
 
                     if(term_found.compare("public") == 0) {
-                        FUNCTION_BRANCH = CURSOR - 5;
-                    } else if(term_found.compare("private") == 0) {
                         FUNCTION_BRANCH = CURSOR - 6;
+                    } else if(term_found.compare("private") == 0) {
+                        FUNCTION_BRANCH = CURSOR - 7;
                     } else {
-                        FUNCTION_BRANCH = CURSOR - 8;
+                        FUNCTION_BRANCH = CURSOR - 9;
                     }
 
                     while(code[CURSOR] == ' ') { // white space eliminator
@@ -259,15 +273,16 @@ void Lexer::unpack_class(string code) {
 
                         if(class_code[CURSOR] == '(') { // enforce opening curly brace check to avoid sending function calls as fnction definitions
                             CURSOR = FUNCTION_BRANCH;
+                            cout<< class_code[CURSOR]<< endl;
                             FUNCTION_TABLE->scan_function(code, CURSOR);
                             string function_block = Lexer::find_bracketed_code(code, '{', CURSOR);
                             unpack_block(function_block);
                             is_func = true;
                         }
 
-                        if(is_func) {
-                            is_func = class_code[CURSOR] == ';';
-                        }
+                        // if(is_func) {
+                        //     is_func = class_code[CURSOR] == ';';
+                        // }
 
                         CURSOR++;
                     }
@@ -284,6 +299,8 @@ void Lexer::unpack_class(string code) {
 
                             CURSOR++;
                         }
+
+                        cout<< variable_dec<< endl;
 
                         if(code[CURSOR] == '\n') {
                             cout<< "Error in line Expected ';' at the end of line"<< endl;
@@ -596,6 +613,7 @@ void Lexer::unpack_block(string sample_code) {
 
 
 void Lexer::unpack_line(string source_code) {
+    cout<< "Unpacking line..."<< endl;
     int LINE_CURSOR = 0;
     const char* line = source_code.c_str();
     Queue<string> term_stack;
@@ -647,11 +665,11 @@ void Lexer::unpack_line(string source_code) {
         if(is_assignment) { // looks for equation in second part
             int second_stack_size = second_part.size();
 
+            bool arithmetic_op_found = false;
             for(int i=0; i<second_stack_size; i++) {
-                bool arithmetic_op_found;
 
                 for(int x=0; x<4; x++) {
-                    arithmetic_op_found = second_part.get_queue().at(i).compare(equation_tokens[x]);
+                    arithmetic_op_found = second_part.get_queue().at(i).compare(equation_tokens[x]) == 0;
 
                     if(arithmetic_op_found)
                         break;
@@ -677,8 +695,60 @@ void Lexer::unpack_line(string source_code) {
                             // cout<< "    Type: "<< type<< endl;
                         }
                     }
+
                 } else {
-                    // string type = term_stack.get_queue().at(0);
+                    cout<< "Got here"<< endl;
+                    string type = term_stack.get_init_queue().at(0);
+                    
+                    if(second_stack_size == 1) {
+                        string assigned = second_part.get_init_queue().at(0);
+
+                        if(is_function_call(assigned)) {
+                            int i = 0;
+                            const char* function_code = assigned.c_str();
+                            string function_name = "";
+
+                            while(function_code[i] != ' ' && function_code[i] != '(') {
+                                function_name += function_code[i];
+                            }
+
+                            // also handle the funtion call itself
+
+                            string* function_details = FUNCTION_TABLE->find(function_name);
+
+                            if(function_details[1].compare(type) == 0) {
+                                //handle successful token
+                            } else {
+                                cout<< "conflicting types error: the function \""<< function_name<< "\" returns "<< function_details[0]<< "expected: "<< type<< endl;
+                            }
+
+                        } else if(CFG().is_word(assigned.c_str())) {
+                            string* var_details = SYMBOL_TABLE->find(assigned);
+
+                            if(var_details[1].compare(type) == 0) {
+                                //handle successful token
+                            } else {
+                                cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
+                            }
+
+                        } else {
+                            if(type.compare("float") == 0 || type.compare("double") == 0) {
+                                if(CFG().is_decimal(assigned.c_str())) {
+                                    cout<< "("<< type<< ")"<< assigned<< endl;
+                                } else {
+                                    cout<< "Invalid type"<< endl;
+                                }
+                            } else if(type.compare("int") == 0) {
+
+                                if(CFG().is_int(assigned.c_str())) {
+                                    cout<< "("<< type<< ")"<< assigned<< endl;
+                                } else {
+                                    cout<< "Invalid type"<< endl;
+                                }
+
+                            }
+                        }
+                    }
                     // string var_name = term_stack
                 }
                 
@@ -778,7 +848,7 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
 
     // spread out equation
     for(int i=0; i<QUEUE_SIZE; i++) {
-        values[i] = equation.dequeue("NO_VALUE");
+        values[i] = equation.get_init_queue().at(i);
     }
 
     if(!cfg.is_word(values[0].c_str())) {
