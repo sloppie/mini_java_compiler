@@ -4,25 +4,32 @@
 
 #include<iostream>
 
+#include "token_stream.h"
+#include "error_stream.h"
+#include "../utilities/package_table.h"
 #include "../utilities/function_table.h"
+#include "../utilities/symbol_table.h"
 #include "../utilities/data_structures/stack.h"
 #include "../utilities/data_structures/queue.h"
-#include "../utilities/symbol_table.h"
-#include "../utilities/package_table.h"
 #include "../language_cfg/language_cfg.h"
 
 using namespace std;
 
 class Lexer { 
+
     public:
         Lexer(
             string source_code,
             SymbolTable *SYMBOL_TABLE,
             PackageTable *PACKAGE_TABLE,
-            FunctionTable *FUNCTION_TABLE) : source_code(source_code), 
-                                             SYMBOL_TABLE(SYMBOL_TABLE),
-                                             PACKAGE_TABLE(PACKAGE_TABLE),
-                                             FUNCTION_TABLE(FUNCTION_TABLE) {}
+            FunctionTable *FUNCTION_TABLE,
+            TokenStream *TOKEN_STREAM,
+            ErrorStream *ERROR_STREAM) : source_code(source_code),
+                                         SYMBOL_TABLE(SYMBOL_TABLE),
+                                         PACKAGE_TABLE(PACKAGE_TABLE),
+                                         FUNCTION_TABLE(FUNCTION_TABLE),
+                                         TOKEN_STREAM(TOKEN_STREAM),
+                                         ERROR_STREAM(ERROR_STREAM) {}
 
         static string find_bracketed_code(string, char, int&);
         void scan_code();
@@ -38,10 +45,10 @@ class Lexer {
         void unpack_if(int&, string);
         void unpack_while(string);
         void unpack_condition(string);
-        void unpack_block(string);
-        void unpack_line(string);
-        void unpack_arithmetic_eq(Queue<string>, string);
-        void unpack_function_call(string);
+        void unpack_block(string, Node*);
+        void unpack_line(string, Node*);
+        void unpack_arithmetic_eq(Queue<string>, string, Node*);
+        void unpack_function_call(string, Node*);
 
         vector<string> break_down_condition(const char*);
 
@@ -55,7 +62,10 @@ class Lexer {
         SymbolTable* SYMBOL_TABLE;
         PackageTable* PACKAGE_TABLE;
         FunctionTable* FUNCTION_TABLE;
+        TokenStream* TOKEN_STREAM;
+        ErrorStream* ERROR_STREAM;
         vector<string> CONTEXT;
+
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "lexer.h"
 
+#include "../utilities/data_structures/node.h"
+
 
 void Lexer::scan_code() {
     unpack_package(source_code, "package");
@@ -55,11 +57,15 @@ string Lexer::find_bracketed_code(string source_code, char bracket_type, int& CU
 
 
 void Lexer::unpack_package(string source_code, string package_type) {
+    Node* package_declaration;
 
-    if(package_type.compare("package") == 0)
+    if(package_type.compare("package") == 0) {
+        package_declaration = new Node(false, "user_package_declaration");
         cout<< "Unpacking package declaration..."<< endl;
-    else
+    } else {
+        package_declaration = new Node(false, "import_declaration");
         cout<< "Unpacking import declaration..."<< endl;
+    }
 
     // int CURSOR = 0;
     const char* code = source_code.c_str();
@@ -71,6 +77,7 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
     while(code[CURSOR] == '\n') {
         // handle new line
+        ERROR_STREAM->new_line();
         CURSOR++;
     }
 
@@ -81,6 +88,15 @@ void Lexer::unpack_package(string source_code, string package_type) {
             if(code[CURSOR] == ' ') {
 
                 if(term_found.compare(package_type) == 0) {
+
+                    if(package_type.compare("package") == 0) {
+                        Node package_node(true, "package");
+                        package_declaration->add_children(package_node);
+                    } else {
+                        Node package_node(true, "import");
+                        package_declaration->add_children(package_node);
+                    }
+
                     opening_term_parsed = true;
                     CURSOR++;
                     
@@ -96,9 +112,18 @@ void Lexer::unpack_package(string source_code, string package_type) {
                     bool is_package = (mini_java_cfg.is_package_name(package_name.c_str()));
 
                     if(is_package) {
+                        // add token
+                        Node package_dec(false, "package_declaration", package_name);
+                        package_declaration->add_children(package_dec);
                         cout<< "Valid package name identified: \""<< package_name<< "\""<< endl;
                     } else {
                         cout<< "Invalide package name: \""<< package_name<< "\""<< endl;
+                        // generating error message below
+                        string error_message = "Package Name: \033[1;0m";
+                        error_message += package_name;
+                        error_message += "\033[0m is invalid";
+
+                        (*ERROR_STREAM)<< error_message;
                     }
 
                     if(code[CURSOR] == ' ') { // whitespace remover
@@ -111,17 +136,23 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
                     if(code[CURSOR] == '\n') {
                         cout<< "expected ';' before moving on to a new line"<< endl;
+                        string error_message = "Expected \033[1;0m';'\033[0m before skipping ot a new line";
+                        (*ERROR_STREAM)<< error_message;
                     } else {
                         // handle token add
+                        Node semi_colon_token(true, ";");
+                        package_declaration->add_children(semi_colon_token);
                         CURSOR++;
                     }
 
                     break;
                 } else {
 
-                    if(package_type.compare("package") == 0)
+                    if(package_type.compare("package") == 0) {
                         cout<< "Expected the token \"package\""<< endl;
-                    else {
+                        string error_message = "Error expected \033[1;0mpackage\033[0m to begin the package declaration";
+                        (*ERROR_STREAM)<< error_message;
+                    } else {
                         // CURSOR = BRANCH;
                     }
 
@@ -145,7 +176,10 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
     if(!opening_term_parsed) {
         cout<< "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;"<< endl;
+        string error_message = "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;";
     }
+
+    (*TOKEN_STREAM)<< (*package_declaration);
 
 }
 
@@ -160,12 +194,16 @@ bool Lexer::package_parser(string code) {
 
 void Lexer::unpack_class(string code) {
     cout<< "Unpacking class..."<< endl;
+
+    Node class_declaration(false, "class_declaration");
     string access_modifier = "";
     string class_name = "";
     string class_token = "";
-    // int CURSOR = 0;
 
     string term_found = "";
+    string error_message = "";
+
+    bool class_closed = false;
 
     const char* class_code = code.c_str();
 
@@ -175,6 +213,7 @@ void Lexer::unpack_class(string code) {
             
             if(class_code[CURSOR] == '\n') {
                 // handle new line
+                ERROR_STREAM->new_line();
             }
 
             CURSOR++;
@@ -187,6 +226,10 @@ void Lexer::unpack_class(string code) {
                     int VARIABLE_DEC_BRANCH;
                     access_modifier = term_found;
                     bool is_func = false;
+
+                    //handle token addition
+                    Node axs_mod(false, "access_modifier", "public");
+                    class_declaration.add_children(axs_mod);
 
                     while(code[CURSOR] == ' ') { // white space eliminator
                         CURSOR++;
@@ -210,9 +253,17 @@ void Lexer::unpack_class(string code) {
 
                     if(CFG().is_word(class_name.c_str())) {
                         // handle class name to package table
-                        cout<< "Class name: "<< class_name<< endl;
+                        Node cls_name(true, "class");
+                        class_declaration.add_children(cls_name);
+                        // cout<< "Class name: "<< class_name<< endl;
                     } else {
-                        cout<< "Invalid class name \""<< class_name<< "\""<< endl;
+                        error_message = "Invalid class name: \033[1;0m";
+                        error_message += class_name;
+                        error_message += "\033[0m";
+                        (*ERROR_STREAM)<< error_message;
+                        error_message = "";
+                        
+                        // cout<< "Invalid class name \""<< class_name<< "\""<< endl;
                     }
 
                     while(code[CURSOR] == ' ') {
@@ -220,10 +271,16 @@ void Lexer::unpack_class(string code) {
                     }
 
                     if(code[CURSOR] == '{') {
+                        // handle terminal addition
+                        Node open_curly(true, "{");
+                        class_declaration.add_children(open_curly);
                         CURSOR++;
                         break;
                     } else {
-                        cout<< "expected '{' token to open up the class body"<< endl;
+                        error_message = "Expected \033[1;0m{\033[0m token to open up class body";
+                        (*ERROR_STREAM)<< error_message;
+                        error_message = "";
+                        // cout<< "expected '{' token to open up the class body"<< endl;
                     }
                 }
             } else {
@@ -241,6 +298,7 @@ void Lexer::unpack_class(string code) {
             
             if(class_code[CURSOR] == '\n') {
                 // handle new line
+                ERROR_STREAM->new_line();
             }
 
             CURSOR++;
@@ -274,9 +332,9 @@ void Lexer::unpack_class(string code) {
                         if(class_code[CURSOR] == '(') { // enforce opening curly brace check to avoid sending function calls as fnction definitions
                             CURSOR = FUNCTION_BRANCH;
                             cout<< class_code[CURSOR]<< endl;
-                            FUNCTION_TABLE->scan_function(code, CURSOR);
+                            Node function_declaration = FUNCTION_TABLE->scan_function(code, CURSOR);
                             string function_block = Lexer::find_bracketed_code(code, '{', CURSOR);
-                            unpack_block(function_block);
+                            unpack_block(function_block, &function_declaration); // Node memory address passed to allow easy adding of nodes to the parent node
                             is_func = true;
                         }
 
@@ -303,9 +361,14 @@ void Lexer::unpack_class(string code) {
                         cout<< variable_dec<< endl;
 
                         if(code[CURSOR] == '\n') {
-                            cout<< "Error in line Expected ';' at the end of line"<< endl;
+                            error_message = "Expected \033[1;0m';'\033[0m before skipping to a new line";
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Error in line Expected ';' at the end of line"<< endl;
                         } else {
-                            unpack_line(variable_dec);
+                            Node class_var_dec(false, "class_variable_declaration");
+                            class_var_dec.add_children(Node(false, "access_modifier", access_modifier));
+                            unpack_line(variable_dec, &class_var_dec);
+                            class_var_dec.add_children(Node(true, ";"));
                         }
 
                     }
@@ -313,6 +376,9 @@ void Lexer::unpack_class(string code) {
                 } else {
                     // !TODO add error handling
                     if(term_found.compare("}") == 0) {
+                        Node closing_brace(true, "}");
+                        class_declaration.add_children(closing_brace);
+                        class_closed = true;
                         break;
                     }
                 }
@@ -325,10 +391,17 @@ void Lexer::unpack_class(string code) {
         CURSOR++;
     }
 
+    if(!class_closed) {
+        error_message = "Expected \033[1;0m}\033[0m to close class declaration";
+        (*ERROR_STREAM)<< error_message;
+        error_message = "";
+    }
+
 }
 
 
 void Lexer::unpack_if(string code) {
+    Node if_else(false, "if_else");
     int CURSOR = 0;
     const char* if_code = code.c_str();
     bool opening_term = false;
@@ -353,7 +426,7 @@ void Lexer::unpack_if(string code) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
         unpack_condition(condition);
-        unpack_block(block_code);
+        unpack_block(block_code, &if_else);
     }
 
 
@@ -419,6 +492,7 @@ void Lexer::unpack_if(string code) {
 
 
 void Lexer::unpack_if(int& CURSOR, string code) {
+    Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
     string term = "";
@@ -442,7 +516,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
         unpack_condition(condition);
-        unpack_block(block_code);
+        unpack_block(block_code, &if_else);
     }
 
 
@@ -505,6 +579,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
 
 
 void Lexer::unpack_if(string code, int& CURSOR) {
+    Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
     string term = "";
@@ -528,13 +603,14 @@ void Lexer::unpack_if(string code, int& CURSOR) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
         unpack_condition(condition);
-        unpack_block(block_code);
+        unpack_block(block_code, &if_else);
     }
 
 }
 
 
 void Lexer::unpack_while(string code) {
+    Node whle(false, "while");
     const char* while_code = code.c_str();
     int CURSOR = 0;
     string while_token = "";
@@ -557,13 +633,13 @@ void Lexer::unpack_while(string code) {
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);
 
         unpack_condition(condition);
-        unpack_block(block_code);
+        unpack_block(block_code, &whle);
     }
 
 }
 
 
-void Lexer::unpack_block(string sample_code) {
+void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
     const char* block_code = sample_code.c_str();
     int BLOCK_CURSOR = 1;
     string token_found = "";
@@ -574,6 +650,7 @@ void Lexer::unpack_block(string sample_code) {
             
             if(block_code[BLOCK_CURSOR] == '\n') {
                 // handle new line
+                ERROR_STREAM->new_line();
             }
 
             BLOCK_CURSOR++;
@@ -582,7 +659,10 @@ void Lexer::unpack_block(string sample_code) {
         } else {
 
             if(block_code[BLOCK_CURSOR] == ';') {
-                unpack_line(token_found);
+                Node new_line(false, "statements", "line");
+                unpack_line(token_found, &new_line);
+                new_line.add_children(Node(true, ";"));
+                RESPECTIVE_NODE->add_children(new_line);
                 token_found = "";
             } else {
                 token_found += block_code[BLOCK_CURSOR];
@@ -612,8 +692,9 @@ void Lexer::unpack_block(string sample_code) {
 }
 
 
-void Lexer::unpack_line(string source_code) {
+void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
     cout<< "Unpacking line..."<< endl;
+    string error_message;
     int LINE_CURSOR = 0;
     const char* line = source_code.c_str();
     Queue<string> term_stack;
@@ -627,7 +708,7 @@ void Lexer::unpack_line(string source_code) {
     string equation_tokens[] = {"*", "/", "+", "-"};
 
     if(is_function_call(source_code)) {
-        unpack_function_call(source_code);
+        unpack_function_call(source_code, RESPECTIVE_NODE);
     } else {
 
         while(line[LINE_CURSOR] != '\0') {
@@ -680,25 +761,43 @@ void Lexer::unpack_line(string source_code) {
 
                     if(is_init_assignment) {
                         string type = term_stack.get_queue().at(0);
-                        unpack_arithmetic_eq(second_part, type);
-                        string var_name = term_stack.get_queue().at(1); 
+                        string var_name = term_stack.get_init_queue().at(1);
+
+                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
                         SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                        RESPECTIVE_NODE->add_children(Node(true, "="));
+                        unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
                     } else {
                         string var_name = term_stack.get_queue().at(0);
                         string type = SYMBOL_TABLE->find(var_name)[1];
 
                         if(type.compare("undefined") == 0) {
-                            cout<< "Tried to access an __UNDEFINED__ variable "<< var_name<< endl;
+                            error_message = "The variable \033[1;0m";
+                            error_message += var_name;
+                            error_message += "\033[0m is undefined";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Tried to access an __UNDEFINED__ variable "<< var_name<< endl;
                         } else {
-                            unpack_arithmetic_eq(term_stack, type);
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                            RESPECTIVE_NODE->add_children(Node(true, "="));
+                            unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
                             // cout<< "Unpacking equation..."<< endl;
                             // cout<< "    Type: "<< type<< endl;
                         }
                     }
 
                 } else {
-                    cout<< "Got here"<< endl;
                     string type = term_stack.get_init_queue().at(0);
+
+                    if(is_init_assignment) { // add tokents
+                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
+                        SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
+                    } else {
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(0)));
+                    }
                     
                     if(second_stack_size == 1) {
                         string assigned = second_part.get_init_queue().at(0);
@@ -718,8 +817,20 @@ void Lexer::unpack_line(string source_code) {
 
                             if(function_details[1].compare(type) == 0) {
                                 //handle successful token
+                                // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                                RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
+                                RESPECTIVE_NODE->add_children(Node(true, "="));
                             } else {
-                                cout<< "conflicting types error: the function \""<< function_name<< "\" returns "<< function_details[0]<< "expected: "<< type<< endl;
+                                error_message = "Conflicting types. The function \033[1;0m";
+                                error_message += function_name;
+                                error_message += "\033[0m returns \033[1;0m";
+                                error_message += function_details[1];
+                                error_message += "\033[0m expected \033[1;0m";
+                                error_message += type;
+                                error_message += "\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "conflicting types error: the function \""<< function_name<< "\" returns "<< function_details[0]<< "expected: "<< type<< endl;
                             }
 
                         } else if(CFG().is_word(assigned.c_str())) {
@@ -727,23 +838,52 @@ void Lexer::unpack_line(string source_code) {
 
                             if(var_details[1].compare(type) == 0) {
                                 //handle successful token
+                                // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                                RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
                             } else {
-                                cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
+                                error_message = "\033[1;0mConflicting types error\033[0m: the variable";
+                                error_message += assigned;
+                                error_message += " is of type: ";
+                                error_message += var_details[0];
+                                error_message += " expected: \033[1;0";
+                                error_message += type;
+                                error_message += "\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
                             }
 
                         } else {
                             if(type.compare("float") == 0 || type.compare("double") == 0) {
                                 if(CFG().is_decimal(assigned.c_str())) {
-                                    cout<< "("<< type<< ")"<< assigned<< endl;
+                                    string new_float = type;
+                                    type += assigned;
+                                    RESPECTIVE_NODE->add_children(Node(false, "number", type));
+                                    // cout<< "("<< type<< ")"<< assigned<< endl;
                                 } else {
-                                    cout<< "Invalid type"<< endl;
+                                    error_message = "Invalid type: \033[1;0m";
+                                    error_message += assigned;
+                                    error_message += "\033[0m is not of type ";
+                                    error_message += type;
+
+                                    (*ERROR_STREAM)<< error_message;
+                                    // cout<< "Invalid type"<< endl;
                                 }
                             } else if(type.compare("int") == 0) {
 
                                 if(CFG().is_int(assigned.c_str())) {
-                                    cout<< "("<< type<< ")"<< assigned<< endl;
+                                    string new_float = type;
+                                    type += assigned;
+                                    RESPECTIVE_NODE->add_children(Node(false, "number", type));
+                                    // cout<< "("<< type<< ")"<< assigned<< endl;
                                 } else {
-                                    cout<< "Invalid type"<< endl;
+                                    error_message = "Invalid type: \033[1;0m";
+                                    error_message += assigned;
+                                    error_message += "\033[0m is not of type ";
+                                    error_message += type;
+
+                                    (*ERROR_STREAM)<< error_message;
+                                    // cout<< "Invalid type"<< endl;
                                 }
 
                             }
@@ -774,12 +914,12 @@ void Lexer::unpack_line(string source_code) {
 
                     if(cfg.is_int((first_number.c_str()))) {
                         type = "int";
-                        unpack_arithmetic_eq(term_stack, type);
+                        unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
                         cout<< "Unpacking equation..."<< endl;
                         cout<< "    Type: "<< type<< endl;
                     } else if(cfg.is_decimal(first_number.c_str())) {
                         type = "float";
-                        unpack_arithmetic_eq(term_stack, type);
+                        unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
                         cout<< "Unpacking equation..."<< endl;
                         cout<< "    Type: "<< type<< endl;
                     } else if(cfg.is_word(first_number.c_str())) {
@@ -788,13 +928,18 @@ void Lexer::unpack_line(string source_code) {
                         if(type.compare("undefined") == 0) {
                             cout<< "Tried to access an __UNDEFINED__ variable"<< first_number<< endl;
                         } else {
-                            unpack_arithmetic_eq(term_stack, type);
+                            unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
                             cout<< "Unpacking equation..."<< endl;
                             cout<< "    Type: "<< type<< endl;
                         }
                         
                     } else {
-                        cout<< "INVALID variable name: "<< first_number<< endl;
+                        error_message = "Invalid variable name: \033[1;0m";
+                        error_message += first_number;
+                        error_message += "\033[0m";
+
+                        (*ERROR_STREAM)<< error_message;
+                        // cout<< "INVALID variable name: "<< first_number<< endl;
                     }
 
                 } else { // handles the lack of an arithmetic operation
@@ -806,28 +951,49 @@ void Lexer::unpack_line(string source_code) {
 
                             bool is_def = (SYMBOL_TABLE->find(var_name)[0].compare("undefined") != 0);
 
-                            if(is_def)
-                                cout<< "Errror: Variable already defined\n    Token Name: "<< var_name<< endl;
+                            if(is_def) {
+                                error_message = "Variable \033[1;0m";
+                                error_message += var_name;
+                                error_message += " \033[0malready defined";
+
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "Errror: Variable already defined\n    Token Name: "<< var_name<< endl;
+                            }
                             else {
                                 SYMBOL_TABLE->add_member(var_name, type_id, "FUNCTION_NAME");
+                                RESPECTIVE_NODE->add_children(Node(false, "type_defined", type_id));
+                                RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
                             }
 
                         } else {
-                            cout<< "Invalid line progression"<< endl;
+                            error_message = "Invalid line progression";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Invalid line progression"<< endl;
                         }
 
                     } else {
                         string* var = SYMBOL_TABLE->find(term_stack.dequeue("undefined"));
 
                         if(var[0].compare("undefined") != 0) {
-                            cout<< "Token already created "<< var[0]<< endl;
+                            error_message = "Token \033[1;0m";
+                            error_message += var[0];
+                            error_message += "\033[0m already defined";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Token already created "<< var[0]<< endl;
                         } else { // block to handle undefined functions
                             string test_var = term_stack.get_init_queue().at(0); // doesn't work.. the queue mimicks memory erasing after dequeue
 
                             if(is_function_call(test_var)) {
-                                unpack_function_call(test_var);
+                                unpack_function_call(test_var, RESPECTIVE_NODE);
                             } else {
-                                cout<< "UNDEFINED token found : "<< var[0]<< endl;
+                                error_message = "Undefined token: \033[1;0m";
+                                error_message += var[0];
+                                error_message += "\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "UNDEFINED token found : "<< var[0]<< endl;
                             }
 
                         }
@@ -840,11 +1006,14 @@ void Lexer::unpack_line(string source_code) {
 
 }
 
-void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
+
+void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Node* RESPECTIVE_NODE) {
     CFG cfg;
     int QUEUE_SIZE = equation.size();
     string values[QUEUE_SIZE];
     bool valid_equation = true;
+
+    string error_message;
 
     // spread out equation
     for(int i=0; i<QUEUE_SIZE; i++) {
@@ -856,17 +1025,32 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
         if(NUMBER_TYPE.compare("int") == 0) {
 
             if(cfg.is_int(values[0].c_str())) {
-                cout<< "TOKEN: int"<<values[0]<< endl;
+                RESPECTIVE_NODE->add_children(Node(false, "number", values[0]));
+                // cout<< "TOKEN: int"<<values[0]<< endl;
             } else {
-                cout<< "INVALID TOKEN "<< values[0]<< ". Expected token of type \"int\""<< endl;
+                error_message = "Invalid token \033[1;0m";
+                error_message += values[0];
+                error_message += "\033[0m. Expected token of type \033[1;0mint\033[0m";
+
+                (*ERROR_STREAM)<< error_message;
+
+                // cout<< "INVALID TOKEN "<< values[0]<< ". Expected token of type \"int\""<< endl;
             }
 
         } else if(NUMBER_TYPE.compare("float") || NUMBER_TYPE.compare("double") == 0){
 
             if(cfg.is_decimal(values[0].c_str())) {
-                cout<< "TOKEN: double"<<values[0]<< endl;
+                RESPECTIVE_NODE->add_children(Node(false, "number", values[0]));
+                // cout<< "TOKEN: double"<<values[0]<< endl;
             } else {
-                cout<< "INVALID TOKEN "<< values[0]<< "Expected token of type \"double\""<< endl;
+                error_message = "Invalid token \033[1;0m";
+                error_message += values[0];
+                error_message += "\033[0m. Expected token of type \033[1;0m";
+                error_message += NUMBER_TYPE;               
+                error_message += "\033[0m";
+
+                (*ERROR_STREAM)<< error_message;
+                // cout<< "INVALID TOKEN "<< values[0]<< "Expected token of type \"double\""<< endl;
             }
 
         }
@@ -891,7 +1075,15 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
                             // pass
                             // cout<< "TOKEN: "<< NUMBER_TYPE<< next<< endl;
                         } else {
-                            cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(next)[1]<< endl;
+                            error_message = "Conflicting types: Expected \033[1;0m";
+                            error_message += NUMBER_TYPE;
+                            error_message += ". However, got: \033[1;0m";
+                            error_message += SYMBOL_TABLE->find(next)[1];
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            break;
+                            // cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(next)[1]<< endl;
                         }
 
                     } else {
@@ -901,7 +1093,13 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
                         } else if(NUMBER_TYPE.compare("int") == 0) {
 
                             if(!cfg.is_int(next.c_str())) {
-                                cout<< "INVALID TOKEN TYPE for token \""<< next<< "\". Expected \"int\""<< endl;
+                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message += next;
+                                error_message += "\033[0m. Expected \033[1;0mint\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                break;
+                                // cout<< "INVALID TOKEN TYPE for token \""<< next<< "\". Expected \"int\""<< endl;
                             } else {
                                 // cout<< "TOKEN: "<< NUMBER_TYPE<< next<< endl;
                             }
@@ -909,27 +1107,53 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
                         } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
 
                             if(!cfg.is_decimal(next.c_str())) {
-                                cout<< "INVALID TOKEN TYPE for token \""<< next<< "\". Expected \"float\""<< endl;
+                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message += next;
+                                error_message += "\033[0m. Expected \033[1;0m";
+                                error_message += NUMBER_TYPE;
+                                error_message += "int\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                break;
+                                // cout<< "INVALID TOKEN TYPE for token \""<< next<< "\". Expected \"float\""<< endl;
                             } else {
                                 // cout<< "TOKEN: "<< NUMBER_TYPE<< next<< endl;
                             }
 
                         } else {
                             // handles function calls
-                            cout<< "INVALID TOKEN: \""<< next<< "\""<< endl;
+                            error_message = "Invalid token: \033[1;0m";
+                            error_message += next;
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            break;
+                            // cout<< "INVALID TOKEN: \""<< next<< "\""<< endl;
                         }
                     }
 
                 } else if(is_equation_token(next) && (next.compare("-") == 0) && (i + 2 < QUEUE_SIZE)) {
 
                 } else if(is_equation_token(next) && next.compare("-") != 0) {
-                    cout<< "EQUATION TOKEN: \""<< current<< "\" cannot be followed by \""<< next<< "\""<< endl;
+                    error_message = "\033[1;0m";
+                    error_message += current;
+                    error_message += "\033[0m cannot be followed by \033[1;0m";
+                    error_message += next;
+
+                    (*ERROR_STREAM)<< error_message;
+                    break; 
+                    // cout<< "EQUATION TOKEN: \""<< current<< "\" cannot be followed by \""<< next<< "\""<< endl;
                 }
 
             } else {
 
                 if(!is_equation_token(next)) {
-                    cout<< "INVALID Token progression: EXPECTED arithmetic token after: "<< current<< endl;
+                    error_message = "Invalid token progression. Expected arithmetic token after: \033[1;0m";
+                    error_message += current;
+                    error_message += "\033[0m";
+
+                    (*ERROR_STREAM)<< error_message;
+                    // cout<< "INVALID Token progression: EXPECTED arithmetic token after: "<< current<< endl;
                 } else {
 
                     if(cfg.is_word(current.c_str())) {
@@ -938,18 +1162,31 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
                             // pass
                             cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
                         } else {
-                            cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(current)[1]<< endl;
+                            error_message = "\033[1;0mType Conflic\033[0m. Expected: ";
+                            error_message += NUMBER_TYPE;
+                            error_message += "\033[1;0m, got: \033[1;0m" ;
+                            error_message += SYMBOL_TABLE->find(current)[1];
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(current)[1]<< endl;
                         }
 
                     } else {
 
                         if(is_function_call(current)) {
                             cout<< "verifying function call..."<< endl;
-                            unpack_function_call(current);
+                            unpack_function_call(current, RESPECTIVE_NODE);
                         } else if(NUMBER_TYPE.compare("int") == 0) {
 
                             if(!cfg.is_int(current.c_str())) {
-                                cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"int\""<< endl;
+                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message += current;
+                                error_message += "\033[0m. Expected \033[1;0mint\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                break;
+                                // cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"int\""<< endl;
                             } else {
                                 cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
                             }
@@ -957,13 +1194,27 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE) {
                         } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
 
                             if(!cfg.is_decimal(current.c_str())) {
-                                cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"float\""<< endl;
+                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message += current;
+                                error_message += "\033[0m. Expected \033[1;0m";
+                                error_message += NUMBER_TYPE;
+                                error_message += "\033[0m";
+
+                                (*ERROR_STREAM)<< error_message;
+                                break;
+                                // cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"float\""<< endl;
                             } else {
                                 cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
                             }
 
                         } else {
-                            cout<< "INVALID TOKEN: \""<< current<< "\""<< endl;
+                            error_message = "Invalid token: \033[1;0m";
+                            error_message += current;
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            break;
+                            // cout<< "INVALID TOKEN: \""<< current<< "\""<< endl;
 
                         }
                     }
@@ -1029,12 +1280,14 @@ bool Lexer::is_equation_token(string token) {
 }
 
 
-void Lexer::unpack_function_call(string function_call) {
+void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
+    cout<< "Unpacking function call..."<< endl;
     const char* fc = function_call.c_str();
     string function_name = "";
     string function_param = "";
     bool fn_found = false;
     vector<string> function_args;
+    string error_message;
 
     int CURSOR = 0;
 
@@ -1086,6 +1339,7 @@ void Lexer::unpack_function_call(string function_call) {
     string* function_details = FUNCTION_TABLE->find(function_name);
 
     if(function_details[0].compare("undefined") != 0) {
+        Node fn_call(false, "function_call", FUNCTION_TABLE->get_function_id(function_name));
         params_queue function_params = FUNCTION_TABLE->find_param_details(function_name);
         
         if(function_params.size() == function_args.size()) {
@@ -1097,21 +1351,46 @@ void Lexer::unpack_function_call(string function_call) {
 
                 if(function_params.dequeue(default_return)[1].compare(arg_type) == 0) {
                     // ritght argument code :)
+                    Node arg(false, "arguments", function_args.at(i));
+                    fn_call.add_children(arg);
                 } else {
-                    cout<< "Argument"<< i + 1<< "for function \""<< function_name<< "\" is supposed to be of type: "<< function_params.get_init_queue().at(i)[1]<< endl;
+                    error_message = "Argument ";
+                    error_message += (i + 1);
+                    error_message += "for funtion \033[1;0m";
+                    error_message += "\033[0m is supposed to be of type";
+                    error_message += function_params.get_init_queue().at(i)[1];
+
+                    (*ERROR_STREAM)<< error_message;
+                    // cout<< "Argument"<< i + 1<< "for function \""<< function_name<< "\" is supposed to be of type: "<< function_params.get_init_queue().at(i)[1]<< endl;
                 }
 
             }
 
         } else {
-            cout<< "ERROR:"<< endl;
-            cout<< "    Expected "<< function_params.size()<< " arguments. Instead gt: "<< function_args.size()<< endl;
-            // insert template example here
-            cout<< "    Function Template: "<< FUNCTION_TABLE->create_function_template(function_name)<< endl;
+            error_message = "Expected: ";
+            error_message += function_params.size();
+            error_message += " arguments but instead got: ";
+            error_message += function_args.size();
+            error_message += "\n\t\t\033[1;0m";
+            error_message += FUNCTION_TABLE->create_function_template(function_name);
+            error_message += "\033[0m";
+
+            (*ERROR_STREAM)<< error_message;
+            // cout<< "ERROR:"<< endl;
+            // cout<< "    Expected "<< function_params.size()<< " arguments. Instead gt: "<< function_args.size()<< endl;
+            // // insert template example here
+            // cout<< "    Function Template: "<< FUNCTION_TABLE->create_function_template(function_name)<< endl;
         }
 
+        RESPECTIVE_NODE->add_children(fn_call);
+
     } else {
-        cout<< "UNDEFINED function called: "<< endl<< "  Name: "<< function_name<< endl;
+        error_message = "Undefined function \033[1;0m";
+        error_message += function_name;
+        error_message += "\033[0m called";
+
+        (*ERROR_STREAM)<< error_message;
+        //cout<< "UNDEFINED function called: "<< endl<< "  Name: "<< function_name<< endl;
     }
     
 }
@@ -1162,6 +1441,7 @@ void Lexer::unpack_condition(string source_code) {
     int CURSOR = 1;
     CFG cfg;
 
+    string error_message;
     // split conditions
     string condition_found = "";
 
@@ -1177,7 +1457,12 @@ void Lexer::unpack_condition(string source_code) {
                     condition_queue.enqueue("&&");
                     condition_found = "";
                 } else {
-                    cout<< "Expected '&&' as a connector after condition: "<< condition<< endl;
+                    error_message = "Expected \033[1;0m&&\033[0m as a connector after condition: \"\033[1;0m";
+                    error_message += condition;
+                    error_message += "\033[0m\"";
+
+                    (*ERROR_STREAM)<< error_message;
+                    // cout<< "Expected '&&' as a connector after condition: "<< condition<< endl;
                 }
 
             } else {// handle or connector
@@ -1187,7 +1472,12 @@ void Lexer::unpack_condition(string source_code) {
                     condition_queue.enqueue("||");
                     condition_found = "";
                 } else {
-                    cout<< "Expected '||' as a connector after condition: "<< condition<< endl;
+                    error_message = "Expected \033[1;0m||\033[0m as a connector after condition: \"\033[1;0m";
+                    error_message += condition;
+                    error_message += "\033[0m\"";
+
+                    (*ERROR_STREAM)<< error_message;
+                    // cout<< "Expected '||' as a connector after condition: "<< condition<< endl;
                 }
 
             }
@@ -1214,7 +1504,11 @@ void Lexer::unpack_condition(string source_code) {
                 }
 
             } else {
-                cout<< "Nested conditions not allowed in this mini java... Skipping over nested condition"<< endl;
+                error_message = "Nested conditions are not allowed. Attempting to skip over the condition";
+
+                // (*ERROR_STREAM)<< error_message;
+                ERROR_STREAM->add_warning(error_message);
+                // cout<< "Nested conditions not allowed in this mini java... Skipping over nested condition"<< endl;
                 
                 while(condition[CURSOR] != ')') {
                     CURSOR++;
@@ -1248,6 +1542,7 @@ void Lexer::unpack_condition(string source_code) {
 // utiltiies
 vector<string> Lexer::break_down_condition(const char* condition) {
     cout<< "Breaking down: "<< condition<< endl;
+    Node condn(false, "condition");
     CFG cfg;
     char COMPARATOR_TOKENS[] = {'>', '<', '=', '!'};
 
@@ -1256,6 +1551,8 @@ vector<string> Lexer::break_down_condition(const char* condition) {
     vector<string> conditions;
     string last_cond = "";
     string last_cond_type = "";
+
+    string error_message;
     
     while(condition[CURSOR] != '\0') {
         
@@ -1278,7 +1575,7 @@ vector<string> Lexer::break_down_condition(const char* condition) {
                 if(last_cond.compare("") != 0) {
 
                     if(is_function_call(last_cond)) {
-                        unpack_function_call(last_cond);
+                        unpack_function_call(last_cond, &condn);
                         cout<< "Token added -> "<< last_cond<< endl;
                         last_cond_type = "variable";
                     } else if(cfg.is_word(last_cond.c_str())) {
@@ -1287,7 +1584,13 @@ vector<string> Lexer::break_down_condition(const char* condition) {
                         if(param[0].compare("undefined") != 0) {
                             cout<< "Token added: "<< last_cond<< endl;
                         } else {
-                            cout<< "Token: '"<< last_cond<<"' added as \"undefined_token\""<< endl;
+                            //warning
+                            error_message = "Token: \033[1;0m";
+                            error_message += last_cond;
+                            error_message += "\033[0m added as \033[1;0mundefined\033[0m token";
+
+                            ERROR_STREAM->add_warning(error_message);
+                            // cout<< "Token: '"<< last_cond<<"' added as \"undefined_token\""<< endl;
                         }
 
                         last_cond_type = "variable";
@@ -1298,7 +1601,12 @@ vector<string> Lexer::break_down_condition(const char* condition) {
                             cout<< last_cond<< " token added"<< endl;
                             last_cond_type = "variable";
                         } else {
-                            cout<< "INVALID token: "<< last_cond<< " passed as a condition param"<< endl;
+                            error_message = "Invalid token: \033[1;0m";
+                            error_message += last_cond;
+                            error_message += "\033[0m passed as a condition param";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "INVALID token: "<< last_cond<< " passed as a condition param"<< endl;
                         }
 
                     }
@@ -1318,11 +1626,21 @@ vector<string> Lexer::break_down_condition(const char* condition) {
                             cout<< "Comparator tokken added: "<< comparator_token<< endl;
                             conditions.push_back(comparator_token);
                         } else {
-                            cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
+                            error_message = "\033[1;0m Invalid progression\033[0m. Expectedd variable or condition before the comparission operator \"\033[1;0m";
+                            error_message += comparator_token;
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
                         }
 
                     } else {
-                        cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
+                        error_message = "\033[1;0m Invalid progression\033[0m. Expectedd variable or condition before the comparission operator \"\033[1;0m";
+                        error_message += comparator_token;
+                        error_message += "\033[0m";
+
+                        (*ERROR_STREAM)<< error_message;
+                        // cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
                     }
 
                     CURSOR++;
@@ -1332,7 +1650,13 @@ vector<string> Lexer::break_down_condition(const char* condition) {
                         string comparator_token = "";
                         comparator_token += condition[CURSOR];
                         comparator_token += condition[CURSOR + 1];
-                        cout<< "invalid token progression: \""<< comparator_token<< "\""<< endl;
+
+                        error_message = "\033[1;0mInvalid token progression\033[0m]: \033[1;0m";
+                        error_message += comparator_token;
+                        error_message += "\033[0m";
+
+                        (*ERROR_STREAM)<< error_message;
+                        // cout<< "invalid token progression: \""<< comparator_token<< "\""<< endl;
                         CURSOR++;
                     }
 
@@ -1358,17 +1682,18 @@ vector<string> Lexer::break_down_condition(const char* condition) {
     if(last_cond.compare("") != 0) {
 
         if (!is_function_call(last_cond) && !cfg.is_word(last_cond.c_str())){
-            cout<< "Invalid token '"<< last_cond<<"'at end of condition"<< endl;
+            error_message = "\033[1;0mInvalid\033[0m token\033[1;0m ";
+            error_message += last_cond;
+            error_message += "\033[0m at the end of condition";
+
+            (*ERROR_STREAM)<< error_message;
+            // cout<< "Invalid token '"<< last_cond<<"'at end of condition"<< endl;
         } else {
             conditions.push_back(last_cond);
             cout<< "Token added -> "<< last_cond<< endl;
         }
 
     }
-
-    // for(string con: conditions) {
-        // cout<< "COndition"<< con<< endl;
-    // }
 
     return conditions;
 

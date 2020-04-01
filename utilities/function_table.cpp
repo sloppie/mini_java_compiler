@@ -1,7 +1,7 @@
 #include "function_table.h"
 #include "../lexer/lexer.h"
 
-FunctionTable::FunctionTable() {
+FunctionTable::FunctionTable(ErrorStream* ERROR_STREAM): ERROR_STREAM(ERROR_STREAM) {
     // default undefined function details
     undefined = new string[3];
     undefined[0] = "undefined";
@@ -123,6 +123,19 @@ string* FunctionTable::find(string key) {
     return answer;
 }
 
+string FunctionTable::get_function_id(string key) {
+    string f_id = "f_id_";
+
+    for(int i=0; i<FUNCTION_TABLE.size(); i++) {
+        if(FUNCTION_TABLE.at(i)[0].compare(key) == 0) {
+            f_id += i;
+            break;
+        }
+    }
+
+    return f_id;
+}
+
 
 params_queue FunctionTable::find_param_details(string key) {
     int index = -1;
@@ -162,7 +175,11 @@ string FunctionTable::create_function_template(string function_name) {
 }
 
 
-void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
+Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
+    string f_id = "f_id_"; // create a table reference for the function
+    f_id += FUNCTION_TABLE.size();
+    Node function_declaration(false, "function_declaration", f_id); // Node used to create a sub tree for the Function
+    string error_message = ""; // adds error message to TOKEN_STREAM
     string access_modifier = "";
     bool am_found = false;
     string return_type = "";
@@ -183,11 +200,17 @@ void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
 
     if(access_modifier.compare("public") == 0 || access_modifier.compare("private") == 0|| access_modifier.compare("protected") == 0) {
         am_found = true;
+        Node am(false, "access_modifier", access_modifier);
+        function_declaration.add_children(am);
     } else {
-        cout<< "INVALID access modifier \""<< access_modifier<< "\""<< endl;
+        error_message = "Invalid acccess modifier token spotted: \033[1;0m";
+        error_message += access_modifier;
+        error_message += "\033[0m";
+        (*ERROR_STREAM)<< error_message;
+        // cout<< "INVALID access modifier \""<< access_modifier<< "\""<< endl;
     }
 
-    cout<< access_modifier<< endl;
+    // cout<< access_modifier<< endl;
 
     while(sc[CURSOR] == ' ') {
         CURSOR++;
@@ -198,6 +221,9 @@ void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         return_type += sc[CURSOR];
         CURSOR++;
     }
+
+    Node type_defined(false, "type_defined", return_type);
+    function_declaration.add_children(type_defined);
 
     rt_found = true;
 
@@ -210,6 +236,9 @@ void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         function_name += sc[CURSOR];
         CURSOR++;
     }
+
+    Node property_name(false, "property_name", function_name);
+    function_declaration.add_children(property_name);
 
     if(function_name.compare("") != 0) {
         if(CFG().is_word(function_name.c_str())) {
@@ -227,10 +256,14 @@ void FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         add_member(function_name, return_type, access_modifier, parameter_code);
     } else {
         if(!am_found) {
-            cout<< "invalid access modifier for the function: \""<< function_name<< endl;
+            // cout<< "invalid access modifier for the function: \""<< function_name<< endl;
         } else {
-            cout<< "Invalid return type or function name in function: \""<< function_name<< "\""<< endl;
+            error_message = "Invalid return type or function name in function: \033[1;0m";
+            error_message += function_name;
+            error_message += "\033[0m";
+            // cout<< "Invalid return type or function name in function: \""<< function_name<< "\""<< endl;
         }
     }
 
+    return function_declaration;
 }

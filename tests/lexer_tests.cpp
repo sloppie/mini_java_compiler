@@ -13,12 +13,15 @@
 using namespace std;
 using namespace fs;
 
-int lexer_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, SymbolTable* SYMBOL_TABLE) {
+int lexer_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, SymbolTable* SYMBOL_TABLE, TokenStream* TOKEN_STREAM, ErrorStream* ERROR_STREAM) {
     string file_name = "/root/gitau/compiler_construction/sample_code/SampleCode.java";
     string data = read_file(file_name);
     cout<< "Code to be unpacked\n"<< data<< endl;
-    Lexer lexical_analyser(data, SYMBOL_TABLE, PACKAGE_TABLE, FUNCTION_TABLE);
+    Lexer lexical_analyser(data, SYMBOL_TABLE, PACKAGE_TABLE, FUNCTION_TABLE, TOKEN_STREAM, ERROR_STREAM);
     lexical_analyser.scan_code();
+
+    if(ERROR_STREAM->has_messages("WARNINGS") || ERROR_STREAM->has_messages("ERRORS"))
+        ERROR_STREAM->print_errors();
 
     return 0;
 }

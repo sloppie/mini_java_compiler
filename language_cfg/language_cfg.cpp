@@ -1,5 +1,5 @@
 #include "language_cfg.h"
-
+ 
 string anything_string = "~a~b~c~d~e~f~g~h~i~j~k~l~m~n~o~p~q~r~s~t~u~v~w~x~y~z~A~B~C~D~E~F~G~H~I~J~K~L~M~N~O~P~Q~R~S~T~U~V~W~X~Y~Z~1~2~3~4~5~6~7~8~9~0~-~=~+~-~(~)~&~^~%~$~#~@~1";
 
 // we try to define the language cfg in the constructor
@@ -15,7 +15,7 @@ CFG::CFG() {
     //import declaration cfg
     MINI_JAVA.insert(pair<string, string>("import_declaration", "import%s%+%package_declaration%;%s%"));
     // class declaration
-    MINI_JAVA.insert(pair<string, string>("class_declaration", "%access_modifier%%s%class%s%{%property_declaration%}"));
+    MINI_JAVA.insert(pair<string, string>("class_declaration", "%access_modifier%class%class_name%{%property_declaration%}"));
         // access modifier
         MINI_JAVA.insert(pair<string, string>("access_modifier", "~private~public~protected"));
         // propertty declarations
