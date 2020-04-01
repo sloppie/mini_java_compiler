@@ -244,6 +244,14 @@ void Lexer::unpack_class(string code) {
                         CURSOR++;
                     }
 
+                    if(class_token.compare("class") == 0) {
+                        class_declaration.add_children(Node(true, "class"));
+                    } else {
+                        error_message = "Expected \033[1;21mclass\033[0m token";
+                        
+                        (*ERROR_STREAM)<< error_message;
+                    }
+
                     while(code[CURSOR] == ' ') { // white space eliminator
                         CURSOR++;
                     }
@@ -256,8 +264,7 @@ void Lexer::unpack_class(string code) {
 
                     if(CFG().is_word(class_name.c_str())) {
                         // handle class name to package table
-                        Node cls_name(true, "class");
-                        class_declaration.add_children(cls_name);
+                        class_declaration.add_children(Node(false, "class_name", class_name));
                         // cout<< "Class name: "<< class_name<< endl;
                     } else {
                         error_message = "Invalid class name: \033[1;0m";
@@ -339,8 +346,11 @@ void Lexer::unpack_class(string code) {
                             string function_block = Lexer::find_bracketed_code(code, '{', CURSOR);
                             unpack_block(function_block, &function_declaration); // Node memory address passed to allow easy adding of nodes to the parent node
                             is_func = true;
+                            CURSOR--; // reset the cursor back by one so that it does not skip over a character in the while loop
                         }
 
+                        // below is the piece of code that will be used to pass function calls 
+                        // if they are to be allowed to the class declaration phase
                         // if(is_func) {
                         //     is_func = class_code[CURSOR] == ';';
                         // }
@@ -361,10 +371,8 @@ void Lexer::unpack_class(string code) {
                             CURSOR++;
                         }
 
-                        cout<< variable_dec<< endl;
-
                         if(code[CURSOR] == '\n') {
-                            error_message = "Expected \033[1;0m';'\033[0m before skipping to a new line";
+                            error_message = "Expected \033[1;21m';'\033[0m before skipping to a new line";
                             (*ERROR_STREAM)<< error_message;
                             // cout<< "Error in line Expected ';' at the end of line"<< endl;
                         } else {
@@ -372,30 +380,53 @@ void Lexer::unpack_class(string code) {
                             class_var_dec.add_children(Node(false, "access_modifier", access_modifier));
                             unpack_line(variable_dec, &class_var_dec);
                             class_var_dec.add_children(Node(true, ";"));
+                            term_found = "";
+
+                            // since the line has already been added,
+                            // we need to skip over to the first new line that we find
+                            while(code[CURSOR] != '\n') {
+                                CURSOR++;
+                            }
+
+                            ERROR_STREAM->new_line();
+                            CURSOR++;
+                            continue;
+
                         }
 
+                    } else {
+                        term_found = "";
+                        ERROR_STREAM->new_line();
+                        CURSOR++;
+                        continue;
                     }
 
                 } else {
                     // !TODO add error handling
-                    if(term_found.compare("}") == 0) {
-                        Node closing_brace(true, "}");
-                        class_declaration.add_children(closing_brace);
-                        class_closed = true;
-                        break;
-                    }
+                    // if(term_found.compare("}") == 0) {
+                    //     Node closing_brace(true, "}");
+                    //     class_declaration.add_children(closing_brace);
+                    //     class_closed = true;
+                    //     break;
+                    // }
                 }
 
 
         } else {
             term_found += class_code[CURSOR];
+
+            if(term_found.compare("}") == 0) {
+                class_declaration.add_children(Node(true, "}"));
+                class_closed = true;
+                break;
+            }
         }
 
         CURSOR++;
     }
 
     if(!class_closed) {
-        error_message = "Expected \033[1;0m}\033[0m to close class declaration";
+        error_message = "Expected \033[1;21m}\033[0m to close class declaration";
         (*ERROR_STREAM)<< error_message;
         error_message = "";
     }
@@ -445,6 +476,7 @@ void Lexer::unpack_if(string code) {
             
             if(if_code[CURSOR] == '\n') {
                 // handle new line
+                // ERROR_STREAM->new_line();
             }
 
             CURSOR++;
@@ -480,6 +512,7 @@ void Lexer::unpack_if(string code) {
                 }
 
             } else {
+                CURSOR = RESET_CURSOR;
                 if_body_ended = true;
             }
 
@@ -518,6 +551,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
     if(opening_term) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
+        // cout<< block_code<< endl;
         unpack_condition(condition);
         unpack_block(block_code, &if_else);
     }
@@ -526,6 +560,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
     term = ""; // reset term to look for an 'else' 
 
     int RESET_CURSOR = CURSOR;
+    cout<< "This is reset cursor: "<< code[CURSOR]<< endl;
     bool if_body_ended = false;
     //
     while(!if_body_ended) {
@@ -535,6 +570,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
             
             if(if_code[CURSOR] == '\n') {
                 // handle new line
+                // ERROR_STREAM->new_line();
             }
 
             CURSOR++;
@@ -570,6 +606,7 @@ void Lexer::unpack_if(int& CURSOR, string code) {
                 }
 
             } else {
+                CURSOR = RESET_CURSOR;
                 if_body_ended = true;
             }
 
@@ -605,6 +642,7 @@ void Lexer::unpack_if(string code, int& CURSOR) {
     if(opening_term) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
+        cout<< block_code<< endl;
         unpack_condition(condition);
         unpack_block(block_code, &if_else);
     }
@@ -662,6 +700,7 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
         } else {
 
             if(block_code[BLOCK_CURSOR] == ';') {
+                cout<< "\033[1;21m"<< token_found<< "\033[0m"<< endl;
                 Node new_line(false, "statements", "line");
                 unpack_line(token_found, &new_line);
                 new_line.add_children(Node(true, ";"));
@@ -682,6 +721,7 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
 
 
                     token_found = "";
+                    continue;
                 }
 
 
