@@ -41,13 +41,13 @@ void ErrorStream::print_errors() {
 
     for(int i=0; i<LINE_NUMBER; i++) {
         
-        if(ERRORS.at(LINE_NUMBER).size() > 0 || WARNINGS.at(LINE_NUMBER).size() > 0) {
-            cout<< "\033[1;21mline: "<< LINE_NUMBER<< "\033[0m"<< endl;
+        if(ERRORS.at(i).size() > 0 || WARNINGS.at(i).size() > 0) {
+            cout<< "\033[1;21mline: "<< i + 1<< "\033[0m"<< endl;
 
-            if(ERRORS.at(LINE_NUMBER).size() > 0) {
-                cout<< "\033[1;31mERRORS:\033[0m] "<< endl;
+            if(ERRORS.at(i).size() > 0) {
+                cout<< "\033[1;31mERRORS:\033[0m "<< endl;
                 
-                for(string error: ERRORS.at(LINE_NUMBER)) {
+                for(string error: ERRORS.at(i)) {
                     cout<< "    "<< error<< endl;
                 }
 
@@ -55,10 +55,10 @@ void ErrorStream::print_errors() {
 
             cout<< endl;
 
-            if(WARNINGS.at(LINE_NUMBER).size() > 0) {
+            if(WARNINGS.at(i).size() > 0) {
                 cout<< "\033[1;36mWARNINGS: \033[0m"<< endl;
                 
-                for(string error: WARNINGS.at(LINE_NUMBER)) {
+                for(string error: WARNINGS.at(i)) {
                     cout<< "    "<< error<< endl;
                 }
 

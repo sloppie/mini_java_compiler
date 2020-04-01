@@ -75,6 +75,8 @@ void Lexer::unpack_package(string source_code, string package_type) {
     int BRANCH;
     CFG mini_java_cfg;
 
+    string error_message;
+
     while(code[CURSOR] == '\n') {
         // handle new line
         ERROR_STREAM->new_line();
@@ -119,7 +121,7 @@ void Lexer::unpack_package(string source_code, string package_type) {
                     } else {
                         cout<< "Invalide package name: \""<< package_name<< "\""<< endl;
                         // generating error message below
-                        string error_message = "Package Name: \033[1;0m";
+                        error_message = "Package Name: \033[1;0m";
                         error_message += package_name;
                         error_message += "\033[0m is invalid";
 
@@ -136,7 +138,7 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
                     if(code[CURSOR] == '\n') {
                         cout<< "expected ';' before moving on to a new line"<< endl;
-                        string error_message = "Expected \033[1;0m';'\033[0m before skipping ot a new line";
+                        error_message = "Expected \033[1;0m';'\033[0m before skipping ot a new line";
                         (*ERROR_STREAM)<< error_message;
                     } else {
                         // handle token add
@@ -149,8 +151,8 @@ void Lexer::unpack_package(string source_code, string package_type) {
                 } else {
 
                     if(package_type.compare("package") == 0) {
-                        cout<< "Expected the token \"package\""<< endl;
-                        string error_message = "Error expected \033[1;0mpackage\033[0m to begin the package declaration";
+                        // cout<< "Expected the token \"package\""<< endl;
+                        error_message = "Error expected \033[1;0mpackage\033[0m to begin the package declaration";
                         (*ERROR_STREAM)<< error_message;
                     } else {
                         // CURSOR = BRANCH;
@@ -175,8 +177,9 @@ void Lexer::unpack_package(string source_code, string package_type) {
     }
 
     if(!opening_term_parsed) {
-        cout<< "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;"<< endl;
-        string error_message = "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;";
+        // cout<< "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;"<< endl;
+        error_message = "Invalid package structure: expected: <import_keyword> | <package_keyword> <package_name>;";
+        (*ERROR_STREAM)<< error_message;
     }
 
     (*TOKEN_STREAM)<< (*package_declaration);

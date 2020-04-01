@@ -1,4 +1,4 @@
-package com.joocy;
+packagecom.joocy;
 
 import java.util.File;
 
