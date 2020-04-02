@@ -2,8 +2,8 @@
 
 #include "../utilities/data_structures/node.h"
 
-
-void Lexer::unpack_if(string code) {
+// this was used during tests and is not meant for use during production code
+void Lexer::unpack_if(string code, Node* RESPECTIVE_NODE) {
     Node if_else(false, "if_else");
     int CURSOR = 0;
     const char* if_code = code.c_str();
@@ -17,7 +17,8 @@ void Lexer::unpack_if(string code) {
 
         if(term.compare("if") == 0) {
             // handle adde=ing to Node tree
-            cout<< "If spotted"<< endl;
+            RESPECTIVE_NODE->add_children(Node(true, "if"));
+            cout<< "\033[1;21mif\033[0m] token added"<< endl;
             opening_term = true;
             break;
         }
@@ -28,7 +29,7 @@ void Lexer::unpack_if(string code) {
     if(opening_term) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
-        unpack_condition(condition);
+        unpack_condition(condition, &if_else);
         unpack_block(block_code, &if_else);
     }
 
@@ -75,9 +76,13 @@ void Lexer::unpack_if(string code) {
 
                 if(second_term.compare("if") == 0) {
                     CURSOR = RESET_CURSOR;
-                    unpack_if(code, CURSOR);
+                    unpack_if(code, CURSOR, &if_else);
                 } else {
-                    Lexer::find_bracketed_code(code, '{', CURSOR);
+                    string else_block = Lexer::find_bracketed_code(code, '{', CURSOR);
+                    if_else.add_children(Node(true, "else"));
+                    Node else_block_node(false, "block_code");
+                    unpack_block(else_block, &else_block_node);
+                    if_else.add_children(else_block_node);
                 }
 
             } else {
@@ -91,12 +96,11 @@ void Lexer::unpack_if(string code) {
 
     }
 
-
-    //
+    RESPECTIVE_NODE->add_children(if_else);
 }
 
 
-void Lexer::unpack_if(int& CURSOR, string code) {
+void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
     Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
@@ -109,7 +113,8 @@ void Lexer::unpack_if(int& CURSOR, string code) {
 
         if(term.compare("if") == 0) {
             // handle adde=ing to Node tree
-            cout<< "If spotted"<< endl;
+            if_else.add_children(Node(true, "if"));
+            cout<< "\033[1;21mif\033[0m] token added"<< endl;
             opening_term = true;
             break;
         }
@@ -121,15 +126,17 @@ void Lexer::unpack_if(int& CURSOR, string code) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
         // cout<< block_code<< endl;
-        unpack_condition(condition);
-        unpack_block(block_code, &if_else);
+        unpack_condition(condition, &if_else);
+        Node if_block_node(false, "block_code");
+        unpack_block(block_code, &if_block_node);
+        if_else.add_children(if_block_node);
     }
 
 
     term = ""; // reset term to look for an 'else' 
 
     int RESET_CURSOR = CURSOR;
-    cout<< "This is reset cursor: "<< code[CURSOR]<< endl;
+    // cout<< "This is reset cursor: "<< code[CURSOR]<< endl;
     bool if_body_ended = false;
     //
     while(!if_body_ended) {
@@ -169,9 +176,13 @@ void Lexer::unpack_if(int& CURSOR, string code) {
 
                 if(second_term.compare("if") == 0) {
                     CURSOR = RESET_CURSOR;
-                    unpack_if(code, CURSOR);
+                    unpack_if(code, CURSOR, &if_else);
                 } else {
-                    Lexer::find_bracketed_code(code, '{', CURSOR);
+                    string else_block = Lexer::find_bracketed_code(code, '{', CURSOR);
+                    if_else.add_children(Node(true, "else"));
+                    Node else_block_node(false, "block_code");
+                    unpack_block(else_block, &else_block_node);
+                    if_else.add_children(else_block_node);
                 }
 
             } else {
@@ -184,11 +195,12 @@ void Lexer::unpack_if(int& CURSOR, string code) {
         }
     }
 
+    RESPECTIVE_NODE->add_children(if_else);
 }
 
 
-void Lexer::unpack_if(string code, int& CURSOR) {
-    Node if_else(false, "if_else");
+void Lexer::unpack_if(string code, int& CURSOR, Node* RESPECTIVE_NODE) {
+    // Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
     string term = "";
@@ -200,7 +212,8 @@ void Lexer::unpack_if(string code, int& CURSOR) {
 
         if(term.compare("if") == 0) {
             // handle token add
-            cout<< "If found"<< endl;
+            RESPECTIVE_NODE->add_children(Node(true, "if")); // token 1
+            cout<< "\033[1;21mif\033[0m] token added"<< endl;
             opening_term = true;
             break;
         }
@@ -212,8 +225,10 @@ void Lexer::unpack_if(string code, int& CURSOR) {
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
         cout<< block_code<< endl;
-        unpack_condition(condition);
-        unpack_block(block_code, &if_else);
+        unpack_condition(condition, RESPECTIVE_NODE);
+        Node if_block_node(false, "block_code");
+        unpack_block(block_code, &if_block_node);
+        RESPECTIVE_NODE->add_children(if_block_node);
     }
 
 }

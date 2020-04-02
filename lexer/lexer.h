@@ -66,18 +66,18 @@ class Lexer {
 
         // unpacks 'if' passed after the 'else' token
         // This function was added because i got too lazy to implement recursiveness
-        void unpack_if(string);
+        void unpack_if(string, Node*);
         // unpacks 'if' statements keeping track of outside passed CURSORS
-        void unpack_if(string, int&);
+        void unpack_if(string, int&, Node*);
         // unpacks 'if' statements keeping track of outside passed CURSORS
-        void unpack_if(int&, string);
+        void unpack_if(int&, string, Node*);
         // unpacks 'while' with the help of Lexer::unpack_condition to unpack condition
         // the block code is parsed sing Lexer::unpack_block
-        void unpack_while(string);
+        void unpack_while(string, Node*);
         // unpacks condition statements and refuses implementation of nested conditions
         // this is done with the help of Lexer::break_down_condition
-        void unpack_condition(string);
-        vector<string> break_down_condition(const char*);
+        void unpack_condition(string, Node*);
+        vector<string> break_down_condition(const char*, Node*);
 
 
     private:

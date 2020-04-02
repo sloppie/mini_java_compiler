@@ -39,8 +39,8 @@ void Lexer::unpack_class(string code) {
                     bool is_func = false;
 
                     //handle token addition
-                    Node axs_mod(false, "access_modifier", "public");
-                    class_declaration.add_children(axs_mod);
+                    class_declaration.add_children(Node(false, "access_modifier", access_modifier));
+                    cout<< "Access modifier for a\033[1;21m"<< access_modifier<< "\033[0m added"<< endl;
 
                     while(code[CURSOR] == ' ') { // white space eliminator
                         CURSOR++;
@@ -54,6 +54,7 @@ void Lexer::unpack_class(string code) {
 
                     if(class_token.compare("class") == 0) {
                         class_declaration.add_children(Node(true, "class"));
+                        cout<< "\033[1;21mclass\033[0m token added"<< endl;
                     } else {
                         error_message = "Expected \033[1;21mclass\033[0m token";
                         
@@ -73,15 +74,13 @@ void Lexer::unpack_class(string code) {
                     if(CFG().is_word(class_name.c_str())) {
                         // handle class name to package table
                         class_declaration.add_children(Node(false, "class_name", class_name));
-                        // cout<< "Class name: "<< class_name<< endl;
+                        cout<< "Class name\033[1;21m"<< class_name<< "\033[0m token added"<< endl;
                     } else {
                         error_message = "Invalid class name: \033[1;0m";
                         error_message += class_name;
                         error_message += "\033[0m";
                         (*ERROR_STREAM)<< error_message;
                         error_message = "";
-                        
-                        // cout<< "Invalid class name \""<< class_name<< "\""<< endl;
                     }
 
                     while(code[CURSOR] == ' ') {
@@ -90,15 +89,15 @@ void Lexer::unpack_class(string code) {
 
                     if(code[CURSOR] == '{') {
                         // handle terminal addition
-                        Node open_curly(true, "{");
-                        class_declaration.add_children(open_curly);
+                        cout<< "\033[1;21m{\033[0m token added"<< endl;
+                        class_declaration.add_children(Node(true, "{"));
+
                         CURSOR++;
                         break;
                     } else {
-                        error_message = "Expected \033[1;0m{\033[0m token to open up class body";
+                        error_message = "Expected \033[1;21m{\033[0m token to open up class body";
                         (*ERROR_STREAM)<< error_message;
                         error_message = "";
-                        // cout<< "expected '{' token to open up the class body"<< endl;
                     }
                 }
             } else {
@@ -239,4 +238,5 @@ void Lexer::unpack_class(string code) {
         error_message = "";
     }
 
+    (*TOKEN_STREAM)<< class_declaration;
 }

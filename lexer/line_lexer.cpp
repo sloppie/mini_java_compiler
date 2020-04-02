@@ -4,7 +4,7 @@
 
 
 void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
-    cout<< "Unpacking line..."<< endl;
+    // cout<< "Unpacking line..."<< endl;
     string error_message;
     int LINE_CURSOR = 0;
     const char* line = source_code.c_str();
@@ -67,6 +67,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         break;
 
                 }
+            
 
                 if(arithmetic_op_found) {
 
@@ -75,27 +76,29 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         string var_name = term_stack.get_init_queue().at(1);
 
                         RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                        cout<< "\033[1;21m"<< type<<"\033[0m token(type_definition) added"<< endl;
                         SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
+                        cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
                         RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
                         RESPECTIVE_NODE->add_children(Node(true, "="));
+                        cout<< "\033[1;21m=\033[0m tokken added"<< endl;
                         unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
                     } else {
                         string var_name = term_stack.get_queue().at(0);
                         string type = SYMBOL_TABLE->find(var_name)[1];
 
                         if(type.compare("undefined") == 0) {
-                            error_message = "The variable \033[1;0m";
+                            error_message = "The variable \033[1;21m";
                             error_message += var_name;
                             error_message += "\033[0m is undefined";
 
                             (*ERROR_STREAM)<< error_message;
-                            // cout<< "Tried to access an __UNDEFINED__ variable "<< var_name<< endl;
                         } else {
                             RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                            cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
                             RESPECTIVE_NODE->add_children(Node(true, "="));
+                            cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
                             unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
-                            // cout<< "Unpacking equation..."<< endl;
-                            // cout<< "    Type: "<< type<< endl;
                         }
                     }
 
@@ -104,10 +107,15 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
                     if(is_init_assignment) { // add tokents
                         RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
+                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
                         RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
+                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
                         SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
                     } else {
                         RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(0)));
+                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(variable_name_definition) added"<< endl;
+                        RESPECTIVE_NODE->add_children(Node(true, "="));
+                        cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
                     }
                     
                     if(second_stack_size == 1) {
@@ -130,18 +138,17 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                                 //handle successful token
                                 // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
                                 RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
-                                RESPECTIVE_NODE->add_children(Node(true, "="));
+                                cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(function_call) added"<< endl;
                             } else {
                                 error_message = "Conflicting types. The function \033[1;0m";
                                 error_message += function_name;
-                                error_message += "\033[0m returns \033[1;0m";
+                                error_message += "\033[0m returns \033[1;21m";
                                 error_message += function_details[1];
                                 error_message += "\033[0m expected \033[1;0m";
                                 error_message += type;
                                 error_message += "\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
-                                // cout<< "conflicting types error: the function \""<< function_name<< "\" returns "<< function_details[0]<< "expected: "<< type<< endl;
                             }
 
                         } else if(CFG().is_word(assigned.c_str())) {
@@ -150,13 +157,14 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                             if(var_details[1].compare(type) == 0) {
                                 //handle successful token
                                 // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
-                                RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
+                                RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
+                                cout<< "\033[1;21m"<< var_details[0]<< "\033[0m token added"<< endl;
                             } else {
                                 error_message = "\033[1;0mConflicting types error\033[0m: the variable";
                                 error_message += assigned;
                                 error_message += " is of type: ";
                                 error_message += var_details[0];
-                                error_message += " expected: \033[1;0";
+                                error_message += " expected: \033[1;21";
                                 error_message += type;
                                 error_message += "\033[0m";
 
@@ -169,10 +177,10 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                                 if(CFG().is_decimal(assigned.c_str())) {
                                     string new_float = type;
                                     type += assigned;
-                                    RESPECTIVE_NODE->add_children(Node(false, "number", type));
-                                    // cout<< "("<< type<< ")"<< assigned<< endl;
+                                    RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
+                                    cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
                                 } else {
-                                    error_message = "Invalid type: \033[1;0m";
+                                    error_message = "Invalid type: \033[1;21m";
                                     error_message += assigned;
                                     error_message += "\033[0m is not of type ";
                                     error_message += type;
@@ -185,10 +193,10 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                                 if(CFG().is_int(assigned.c_str())) {
                                     string new_float = type;
                                     type += assigned;
-                                    RESPECTIVE_NODE->add_children(Node(false, "number", type));
-                                    // cout<< "("<< type<< ")"<< assigned<< endl;
+                                    RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
+                                    cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
                                 } else {
-                                    error_message = "Invalid type: \033[1;0m";
+                                    error_message = "Invalid type: \033[1;21m";
                                     error_message += assigned;
                                     error_message += "\033[0m is not of type ";
                                     error_message += type;
@@ -226,26 +234,25 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     if(cfg.is_int((first_number.c_str()))) {
                         type = "int";
                         unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
-                        cout<< "Unpacking equation..."<< endl;
-                        cout<< "    Type: "<< type<< endl;
                     } else if(cfg.is_decimal(first_number.c_str())) {
                         type = "float";
                         unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
-                        cout<< "Unpacking equation..."<< endl;
-                        cout<< "    Type: "<< type<< endl;
                     } else if(cfg.is_word(first_number.c_str())) {
                         type = SYMBOL_TABLE->find(first_number)[1];
 
                         if(type.compare("undefined") == 0) {
-                            cout<< "Tried to access an __UNDEFINED__ variable"<< first_number<< endl;
+                            error_message = "The token \033[1;21m";
+                            error_message += first_number;
+                            error_message += "\033[0m is undefined";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "Tried to access an __UNDEFINED__ variable"<< first_number<< endl;
                         } else {
                             unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
-                            cout<< "Unpacking equation..."<< endl;
-                            cout<< "    Type: "<< type<< endl;
                         }
                         
                     } else {
-                        error_message = "Invalid variable name: \033[1;0m";
+                        error_message = "Invalid variable name: \033[1;21m";
                         error_message += first_number;
                         error_message += "\033[0m";
 
@@ -263,17 +270,18 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                             bool is_def = (SYMBOL_TABLE->find(var_name)[0].compare("undefined") != 0);
 
                             if(is_def) {
-                                error_message = "Variable \033[1;0m";
+                                error_message = "Variable \033[1;21m";
                                 error_message += var_name;
                                 error_message += " \033[0malready defined";
 
                                 (*ERROR_STREAM)<< error_message;
                                 // cout<< "Errror: Variable already defined\n    Token Name: "<< var_name<< endl;
-                            }
-                            else {
+                            } else {
                                 SYMBOL_TABLE->add_member(var_name, type_id, "FUNCTION_NAME");
                                 RESPECTIVE_NODE->add_children(Node(false, "type_defined", type_id));
+                                cout<< "\033[1;21m"<< type_id<< "token(type_defined) added"<< endl;
                                 RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                                cout<< "\033[1;21m"<< var_name<< "token(variable_name_definition) added"<< endl;
                             }
 
                         } else {
@@ -287,7 +295,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         string* var = SYMBOL_TABLE->find(term_stack.dequeue("undefined"));
 
                         if(var[0].compare("undefined") != 0) {
-                            error_message = "Token \033[1;0m";
+                            error_message = "Token \033[1;21m";
                             error_message += var[0];
                             error_message += "\033[0m already defined";
 
@@ -299,12 +307,11 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                             if(is_function_call(test_var)) {
                                 unpack_function_call(test_var, RESPECTIVE_NODE);
                             } else {
-                                error_message = "Undefined token: \033[1;0m";
+                                error_message = "Undefined token: \033[1;21m";
                                 error_message += var[0];
                                 error_message += "\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
-                                // cout<< "UNDEFINED token found : "<< var[0]<< endl;
                             }
 
                         }
@@ -332,36 +339,36 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
     }
 
     if(!cfg.is_word(values[0].c_str())) {
+        string new_number = NUMBER_TYPE;
 
         if(NUMBER_TYPE.compare("int") == 0) {
 
             if(cfg.is_int(values[0].c_str())) {
-                RESPECTIVE_NODE->add_children(Node(false, "number", values[0]));
+                new_number += values[0];
+                RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                cout<< "\033[1;21m"<< new_number<< "\033[0m token added"<< endl;
                 // cout<< "TOKEN: int"<<values[0]<< endl;
             } else {
-                error_message = "Invalid token \033[1;0m";
+                error_message = "Invalid token \033[1;21m";
                 error_message += values[0];
-                error_message += "\033[0m. Expected token of type \033[1;0mint\033[0m";
+                error_message += "\033[0m . Expected token of type \033[1;0mint\033[0m";
 
                 (*ERROR_STREAM)<< error_message;
-
-                // cout<< "INVALID TOKEN "<< values[0]<< ". Expected token of type \"int\""<< endl;
             }
 
         } else if(NUMBER_TYPE.compare("float") || NUMBER_TYPE.compare("double") == 0){
-
+            new_number += values[0];
             if(cfg.is_decimal(values[0].c_str())) {
-                RESPECTIVE_NODE->add_children(Node(false, "number", values[0]));
-                // cout<< "TOKEN: double"<<values[0]<< endl;
+                RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                cout<< "\033[1;21m"<< new_number<< "\033[0m token added"<< endl;
             } else {
-                error_message = "Invalid token \033[1;0m";
+                error_message = "Invalid token \033[1;21m";
                 error_message += values[0];
-                error_message += "\033[0m. Expected token of type \033[1;0m";
+                error_message += "\033[0m. Expected token of type \033[1;21m";
                 error_message += NUMBER_TYPE;               
                 error_message += "\033[0m";
 
                 (*ERROR_STREAM)<< error_message;
-                // cout<< "INVALID TOKEN "<< values[0]<< "Expected token of type \"double\""<< endl;
             }
 
         }
@@ -386,9 +393,9 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                             // pass
                             // cout<< "TOKEN: "<< NUMBER_TYPE<< next<< endl;
                         } else {
-                            error_message = "Conflicting types: Expected \033[1;0m";
+                            error_message = "Conflicting types: Expected \033[1;21m";
                             error_message += NUMBER_TYPE;
-                            error_message += ". However, got: \033[1;0m";
+                            error_message += ". However, got: \033[1;21m";
                             error_message += SYMBOL_TABLE->find(next)[1];
                             error_message += "\033[0m";
 
@@ -404,9 +411,9 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                         } else if(NUMBER_TYPE.compare("int") == 0) {
 
                             if(!cfg.is_int(next.c_str())) {
-                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message = "Invalid type for token: \033[1;21m";
                                 error_message += next;
-                                error_message += "\033[0m. Expected \033[1;0mint\033[0m";
+                                error_message += "\033[0m. Expected \033[1;21mint\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
                                 break;
@@ -418,22 +425,20 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                         } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
 
                             if(!cfg.is_decimal(next.c_str())) {
-                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message = "Invalid type for token: \033[1;21m";
                                 error_message += next;
-                                error_message += "\033[0m. Expected \033[1;0m";
+                                error_message += "\033[0m. Expected \033[1;21m";
                                 error_message += NUMBER_TYPE;
                                 error_message += "int\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
                                 break;
-                                // cout<< "INVALID TOKEN TYPE for token \""<< next<< "\". Expected \"float\""<< endl;
                             } else {
-                                // cout<< "TOKEN: "<< NUMBER_TYPE<< next<< endl;
                             }
 
                         } else {
                             // handles function calls
-                            error_message = "Invalid token: \033[1;0m";
+                            error_message = "Invalid token: \033[1;21m";
                             error_message += next;
                             error_message += "\033[0m";
 
@@ -446,32 +451,32 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                 } else if(is_equation_token(next) && (next.compare("-") == 0) && (i + 2 < QUEUE_SIZE)) {
 
                 } else if(is_equation_token(next) && next.compare("-") != 0) {
-                    error_message = "\033[1;0m";
+                    error_message = "\033[1;21m";
                     error_message += current;
                     error_message += "\033[0m cannot be followed by \033[1;0m";
                     error_message += next;
 
                     (*ERROR_STREAM)<< error_message;
                     break; 
-                    // cout<< "EQUATION TOKEN: \""<< current<< "\" cannot be followed by \""<< next<< "\""<< endl;
                 }
-
+                RESPECTIVE_NODE->add_children(Node(true, current));
+                cout<< "\033[1;21m"<< current<< "\033[0m token added"<< endl;
             } else {
 
                 if(!is_equation_token(next)) {
-                    error_message = "Invalid token progression. Expected arithmetic token after: \033[1;0m";
+                    error_message = "Invalid token progression. Expected arithmetic token after: \033[1;21m";
                     error_message += current;
                     error_message += "\033[0m";
 
                     (*ERROR_STREAM)<< error_message;
-                    // cout<< "INVALID Token progression: EXPECTED arithmetic token after: "<< current<< endl;
                 } else {
 
                     if(cfg.is_word(current.c_str())) {
 
                         if(SYMBOL_TABLE->find(current)[1].compare(NUMBER_TYPE) == 0) {
                             // pass
-                            cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", current));
+                            cout<< "\033[1;21m"<< current<< "\033[0m token(propety_name) added"<< endl;
                         } else {
                             error_message = "\033[1;0mType Conflic\033[0m. Expected: ";
                             error_message += NUMBER_TYPE;
@@ -489,20 +494,25 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                             cout<< "verifying function call..."<< endl;
                             unpack_function_call(current, RESPECTIVE_NODE);
                         } else if(NUMBER_TYPE.compare("int") == 0) {
-
+                            string new_number = NUMBER_TYPE;
+                            new_number += current;
                             if(!cfg.is_int(current.c_str())) {
-                                error_message = "Invalid type for token: \033[1;0m";
+                                error_message = "Invalid type for token: \033[1;21m";
                                 error_message += current;
-                                error_message += "\033[0m. Expected \033[1;0mint\033[0m";
+                                error_message += "\033[0m. Expected \033[1;21mint\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
                                 break;
                                 // cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"int\""<< endl;
                             } else {
+                                RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                                cout << "\033[1;21m" << current << "\033[0m token(number) added" << endl;
                                 cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
                             }
 
                         } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
+                            string new_number = NUMBER_TYPE;
+                            new_number += current;
 
                             if(!cfg.is_decimal(current.c_str())) {
                                 error_message = "Invalid type for token: \033[1;0m";
@@ -515,7 +525,8 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
                                 break;
                                 // cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"float\""<< endl;
                             } else {
-                                cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
+                                RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                                cout << "\033[1;21m" << current << "\033[0m token(number) added" << endl;
                             }
 
                         } else {
@@ -537,30 +548,50 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
         } else {
             //compare current to equation tokens
             if(is_eq_token) {
-                cout<< "Equation token cannot end an equation"<< endl;
+                error_message = "\033[1;21mInvalid progression\033[0m: Equation token cannot end an equation";
 
+                (*ERROR_STREAM)<< error_message;
+                // cout<< "Equation token cannot end an equation"<< endl;
             } else {
+                string new_number = NUMBER_TYPE;
+                new_number += current;
 
                 if(is_function_call(current)) {
 
                 }else if(NUMBER_TYPE.compare("int") == 0) {
 
                     if(!cfg.is_int(current.c_str())) {
-                        cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"int\""<< endl;
+                        error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
+                        error_message += current;
+                        error_message += "\033[0m Expected \033[1;21mint\033[0m";
+
+                        (*ERROR_STREAM)<< error_message;
                     } else {
-                        cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
+                        RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                        cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
                     }
 
                 } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
 
                     if(!cfg.is_decimal(current.c_str())) {
-                        cout<< "INVALID TOKEN TYPE for token \""<< current<< "\". Expected \"float\""<< endl;
+                        error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
+                        error_message += current;
+                        error_message += "\033[0m Expected \033[1;21m";
+                        error_message += NUMBER_TYPE;
+                        error_message +="\033[0m";
+
+                        (*ERROR_STREAM)<< error_message;
                     } else {
-                        cout<< "TOKEN: "<< NUMBER_TYPE<< current<< endl;
+                        RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                        cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
                     }
 
                 } else {
-                    cout<< "INVALID TOKEN: \""<< current<< "\""<< endl;
+                    error_message = "Invalid token \033[1;21m";
+                    error_message += current;
+                    error_message += "\033[0m";
+
+                    (*ERROR_STREAM)<< error_message;
                 }
 
                 // if (SYMBOL_TABLE->find(current)[1].compare(NUMBER_TYPE) != 0) {

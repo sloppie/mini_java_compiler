@@ -17,7 +17,7 @@ CFG::CFG() {
     // class declaration
     MINI_JAVA.insert(pair<string, string>("class_declaration", "%access_modifier%class%class_name%{%property_declaration%}"));
         // access modifier
-        MINI_JAVA.insert(pair<string, string>("access_modifier", "~private~public~protected"));
+        MINI_JAVA.insert(pair<string, string>("access_modifier", "~private~public~protected")); 
         // propertty declarations
         MINI_JAVA.insert(pair<string, string>("property_declaration", "%access_modifier%%function_declaration%|%access_modifier%%class_variable_declaration%"));
             MINI_JAVA.insert(pair<string, string>("function_declaration", "%type_defined%%s%%property_name%%s%(%parameter_definition%)%s%%block_code%"));

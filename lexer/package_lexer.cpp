@@ -39,11 +39,11 @@ void Lexer::unpack_package(string source_code, string package_type) {
                 if(term_found.compare(package_type) == 0) {
 
                     if(package_type.compare("package") == 0) {
-                        Node package_node(true, "package");
-                        package_declaration->add_children(package_node);
+                        package_declaration->add_children(Node(true, "package"));
+                        cout<< "\033[1;21mpackage\033[0m token added"<< endl;
                     } else {
-                        Node package_node(true, "import");
-                        package_declaration->add_children(package_node);
+                        package_declaration->add_children(Node(true, "import"));
+                        cout<< "\033[1;21mimport\033[0m token added"<< endl;
                     }
 
                     opening_term_parsed = true;
@@ -55,18 +55,18 @@ void Lexer::unpack_package(string source_code, string package_type) {
                         CURSOR++;                        
                     }
 
-                    cout<< "PACKAGE NAME: "<< package_name<< endl;
+                    // cout<< "PACKAGE NAME: "<< package_name<< endl;
                     // package_name += ';';
             
                     bool is_package = (mini_java_cfg.is_package_name(package_name.c_str()));
 
                     if(is_package) {
                         // add token
-                        Node package_dec(false, "package_declaration", package_name);
-                        package_declaration->add_children(package_dec);
-                        cout<< "Valid package name identified: \""<< package_name<< "\""<< endl;
+                        package_declaration->add_children(Node(false, "package_declaration", package_name));
+                        cout<< "Package declaration: \"\033[1;21m"<< package_name << "\033[0m token added"<< endl;
+                        // cout<< "Valid package name identified: \""<< package_name<< "\""<< endl;
                     } else {
-                        cout<< "Invalide package name: \""<< package_name<< "\""<< endl;
+                        // cout<< "Invalide package name: \""<< package_name<< "\""<< endl;
                         // generating error message below
                         error_message = "Package Name: \033[1;0m";
                         error_message += package_name;
@@ -84,13 +84,13 @@ void Lexer::unpack_package(string source_code, string package_type) {
                     }
 
                     if(code[CURSOR] == '\n') {
-                        cout<< "expected ';' before moving on to a new line"<< endl;
-                        error_message = "Expected \033[1;0m';'\033[0m before skipping ot a new line";
+                        // cout<< "expected ';' before moving on to a new line"<< endl;
+                        error_message = "Expected \033[1;21m';'\033[0m before skipping ot a new line";
                         (*ERROR_STREAM)<< error_message;
                     } else {
                         // handle token add
-                        Node semi_colon_token(true, ";");
-                        package_declaration->add_children(semi_colon_token);
+                        package_declaration->add_children(Node(true, ";"));
+                        cout<< "\033[1;21m;\033[0m token added"<< endl;
                         CURSOR++;
                     }
 
@@ -99,7 +99,7 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
                     if(package_type.compare("package") == 0) {
                         // cout<< "Expected the token \"package\""<< endl;
-                        error_message = "Error expected \033[1;0mpackage\033[0m to begin the package declaration";
+                        error_message = "Error expected \033[1;21mpackage\033[0m to begin the package declaration";
                         (*ERROR_STREAM)<< error_message;
                     } else {
                         // CURSOR = BRANCH;
@@ -140,4 +140,3 @@ bool Lexer::package_parser(string code) {
 
     return false;
 }
-

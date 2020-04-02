@@ -5,6 +5,8 @@
 
 void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
     const char* block_code = sample_code.c_str();
+    RESPECTIVE_NODE->add_children(Node(true, "{"));
+    cout<< "\033[0;21m{\033[0m token added"<< endl;
     int BLOCK_CURSOR = 1;
     string token_found = "";
 
@@ -27,6 +29,7 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
                 Node new_line(false, "statements", "line");
                 unpack_line(token_found, &new_line);
                 new_line.add_children(Node(true, ";"));
+                cout<< "\033[1;21m;\033[0m token added"<< endl;
                 RESPECTIVE_NODE->add_children(new_line);
                 token_found = "";
             } else {
@@ -36,10 +39,10 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
 
                     if(token_found.compare("if") == 0) {
                         BLOCK_CURSOR--; 
-                        unpack_if(BLOCK_CURSOR, sample_code);
+                        unpack_if(BLOCK_CURSOR, sample_code, RESPECTIVE_NODE);
                     } else {
                         BLOCK_CURSOR -= 4;
-                        unpack_while(sample_code);
+                        unpack_while(sample_code, RESPECTIVE_NODE);
                     }
 
 
@@ -54,5 +57,6 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
         BLOCK_CURSOR++;
     }
 
+    RESPECTIVE_NODE->add_children(Node(true, "}"));
 
 }
