@@ -11,6 +11,7 @@
 #include "../utilities/symbol_table.h"
 #include "../utilities/data_structures/stack.h"
 #include "../utilities/data_structures/queue.h"
+#include "../utilities/data_structures/node.h"
 #include "../language_cfg/language_cfg.h"
 
 using namespace std;
@@ -82,7 +83,7 @@ class Lexer {
 
     private:
         string source_code;
-        int CURSOR;
+        int CURSOR = 0;
         string EQUATION_TOKENS[4] = {"*", "/", "+", "-"};
         int EQ_TOKEN_SIZE = 4;
         int LINE_NUMBER = 0;

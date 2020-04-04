@@ -16,8 +16,8 @@ class FunctionTable {
     public:
         FunctionTable(ErrorStream*);
         Node scan_function(string, int&);
-        void add_member(string, string, string, string);
-        void add_param_details(string);
+        void add_member(string, string, string, string, Node*);
+        void add_param_details(string, Node*);
         string *find(string);
         params_queue find_param_details(string);
         string get_function_id(string);

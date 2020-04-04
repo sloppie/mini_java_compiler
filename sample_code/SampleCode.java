@@ -23,7 +23,7 @@ public class SampleCode {
 
     public int u = 24; 
 
-    public int secondFunction(int args) {
+    public int secondFunction(int args, int argsTwo) {
         int secondX = 0;
         int secondY = 2;
 

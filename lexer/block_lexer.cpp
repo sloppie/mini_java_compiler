@@ -26,7 +26,7 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
 
             if(block_code[BLOCK_CURSOR] == ';') {
                 cout<< "\033[1;21m"<< token_found<< "\033[0m"<< endl;
-                Node new_line(false, "statements", "line");
+                Node new_line(false, "statements");
                 unpack_line(token_found, &new_line);
                 new_line.add_children(Node(true, ";"));
                 cout<< "\033[1;21m;\033[0m token added"<< endl;

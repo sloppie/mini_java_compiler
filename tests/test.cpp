@@ -3,6 +3,7 @@
 #include "../lexer/lexer.h"
 #include "../lexer/error_stream.h"
 #include "../lexer/token_stream.h"
+#include "../parser/parser.h"
 #include "../utilities/function_table.h"
 #include "../utilities/package_table.h"
 #include "../utilities/symbol_table.h"
@@ -24,12 +25,16 @@ int main() {
     PackageTable* PACKAGE_TABLE = new PackageTable();
     TokenStream* TOKEN_STREAM = new TokenStream();
 
-    // function_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
-    // line_unpack_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
-    // condition_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE);
-    cout<< "\033[1;33mthis is a test1\033[0m"<< endl;
-    cout<< "End of test"<< endl;
     lexer_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE, TOKEN_STREAM, ERROR_STREAM);
+
+    if(ERROR_STREAM->has_messages("ERRORS")) {
+        ERROR_STREAM->print_errors();
+    } else {
+        ERROR_STREAM->print_errors();
+        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+    }
 
     return 0;
 }

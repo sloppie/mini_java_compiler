@@ -9,32 +9,49 @@ using namespace std;
 class Node {
 
     public:
-        Node( // initialisation
-            bool is_terminal, 
+        Node(
+            bool terminal, 
             string node_name
-        ): is_terminal(is_terminal),
+        ): terminal(terminal),
            node_name(node_name) {}
 
-        Node( // initialisation
-            bool is_terminal, 
+        Node(
+            bool terminal, 
             string node_name,
             string value
-        ): is_terminal(is_terminal),
+        ): terminal(terminal),
            node_name(node_name),
            value(value) {}
 
         //adds children nodes if the Node is NOT a terminal
         void add_children(Node child) {
 
-            if(!is_terminal)
+            if(!terminal)
                 children.push_back(child);
 
         }
 
+        // gets the node name
+        string get_name() {
+            return node_name;
+        }
+
+        bool is_terminal() {
+            return terminal;
+        }
+
+        vector<Node> get_children() {
+            return children;
+        }
+
+        string get_value() {
+            return value;
+        }
+
     private:
-        bool is_terminal = false;
+        bool terminal = false;
         string node_name;
-        string value;
+        string value = "";
 
         vector<Node> children;
 

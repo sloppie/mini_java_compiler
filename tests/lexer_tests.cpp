@@ -19,8 +19,6 @@ int lexer_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, Symb
     Lexer lexical_analyser(data, SYMBOL_TABLE, PACKAGE_TABLE, FUNCTION_TABLE, TOKEN_STREAM, ERROR_STREAM);
     lexical_analyser.scan_code();
 
-    if(ERROR_STREAM->has_messages("WARNINGS") || ERROR_STREAM->has_messages("ERRORS"))
-        ERROR_STREAM->print_errors();
 
     return 0;
 }

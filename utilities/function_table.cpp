@@ -1,6 +1,8 @@
 #include "function_table.h"
 #include "../lexer/lexer.h"
 
+#include<string>
+
 FunctionTable::FunctionTable(ErrorStream* ERROR_STREAM): ERROR_STREAM(ERROR_STREAM) {
     // default undefined function details
     undefined = new string[3];
@@ -16,7 +18,7 @@ FunctionTable::FunctionTable(ErrorStream* ERROR_STREAM): ERROR_STREAM(ERROR_STRE
     undefined_param.enqueue(up);
 }
 
-void FunctionTable::add_member(string value, string return_type, string context, string parameter_block) {
+void FunctionTable::add_member(string value, string return_type, string context, string parameter_block, Node* function_declaration) {
     string* new_member = new string[3];
     new_member[0] = value;
     new_member[1] = return_type;
@@ -27,12 +29,14 @@ void FunctionTable::add_member(string value, string return_type, string context,
     cout<< "    Return Type: "<< return_type<< endl;
     cout<< "    Context: "<< context<< endl;
     FUNCTION_TABLE.push_back(new_member);
-    add_param_details(parameter_block);
+    add_param_details(parameter_block, function_declaration);
 }
 
-void FunctionTable::add_param_details(string parameter_block) {
+void FunctionTable::add_param_details(string parameter_block, Node* function_declaration) {
     cout<< "Parsing param block: "<< parameter_block<< endl;
     const char* pb = parameter_block.c_str();
+    function_declaration->add_children(Node(true, "(")); // add terrminal '(' to the tree
+    Node parameter_definitiion(false, "parameter_definition");
     int CURSOR = 1;
     bool params_found = true;
     params_queue new_param;
@@ -90,6 +94,18 @@ void FunctionTable::add_param_details(string parameter_block) {
             param_added[1] = parameter_type;
             param_added[2] = function_name;
 
+            // create tree
+            Node parameter(false, "parameter");
+            parameter.add_children(Node(false, "type_defined", parameter_type));
+            parameter.add_children(Node(false, "word", parameter_name));
+            parameter_definitiion.add_children(parameter);            
+
+            if(pb[CURSOR] == ',') {
+                parameter_definitiion.add_children(Node(true, ","));                
+            } else if(pb[CURSOR] == ')') {
+                parameter_definitiion.add_children(Node(true, ")"));
+            }
+
             new_param.enqueue(param_added);
         } else if(type_found){
             params_found = false;
@@ -107,6 +123,8 @@ void FunctionTable::add_param_details(string parameter_block) {
     } else {
         CORRESSPONDING_PARAMS.push_back(undefined_param);
     }
+
+    function_declaration->add_children(parameter_definitiion);
 }
 
 
@@ -128,7 +146,7 @@ string FunctionTable::get_function_id(string key) {
 
     for(int i=0; i<FUNCTION_TABLE.size(); i++) {
         if(FUNCTION_TABLE.at(i)[0].compare(key) == 0) {
-            f_id += i;
+            f_id += to_string(i);
             break;
         }
     }
@@ -177,8 +195,8 @@ string FunctionTable::create_function_template(string function_name) {
 
 Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
     string f_id = "f_id_"; // create a table reference for the function
-    f_id += FUNCTION_TABLE.size();
-    Node function_declaration(false, "function_declaration", f_id); // Node used to create a sub tree for the Function
+    f_id += to_string(FUNCTION_TABLE.size());
+    Node function_declaration(false, "function_declaration"); // Node used to create a sub tree for the Function
     string error_message = ""; // adds error message to TOKEN_STREAM
     string access_modifier = "";
     bool am_found = false;
@@ -188,7 +206,6 @@ Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
     bool fn_found = false;
     int CURSOR = BLOCK_CURSOR;
     string parameter_code = Lexer::find_bracketed_code(source_code, '(', BLOCK_CURSOR);
-    // string block_code = Lexer::find_bracketed_code(source_code, '{', CURSOR);
 
     const char* sc = source_code.c_str();
 
@@ -253,7 +270,7 @@ Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
     }
 
     if(am_found && rt_found && fn_found) {
-        add_member(function_name, return_type, access_modifier, parameter_code);
+        add_member(function_name, return_type, access_modifier, parameter_code, &function_declaration);
     } else {
         if(!am_found) {
             // cout<< "invalid access modifier for the function: \""<< function_name<< endl;

@@ -14,6 +14,8 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
     bool is_init_assignment = false;
     string term_found = "";
 
+    bool is_defined = false;
+
     int breakout_index = -1;
 
     string equation_tokens[] = {"*", "/", "+", "-"};
@@ -67,22 +69,27 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         break;
 
                 }
-            
 
+                if(arithmetic_op_found)
+                    break;
+            
+            }
                 if(arithmetic_op_found) {
 
                     if(is_init_assignment) {
                         string type = term_stack.get_queue().at(0);
                         string var_name = term_stack.get_init_queue().at(1);
-
-                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
-                        cout<< "\033[1;21m"<< type<<"\033[0m token(type_definition) added"<< endl;
-                        SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
-                        cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
-                        RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
-                        RESPECTIVE_NODE->add_children(Node(true, "="));
-                        cout<< "\033[1;21m=\033[0m tokken added"<< endl;
-                        unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
+                        if(!is_defined) {
+                            RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                            cout<< "\033[1;21m"<< type<<"\033[0m token(type_definition) added"<< endl;
+                            SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
+                            cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                            RESPECTIVE_NODE->add_children(Node(true, "="));
+                            cout<< "\033[1;21m=\033[0m tokken added"<< endl;
+                            unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
+                            is_defined = true;
+                        }
                     } else {
                         string var_name = term_stack.get_queue().at(0);
                         string type = SYMBOL_TABLE->find(var_name)[1];
@@ -106,11 +113,15 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     string type = term_stack.get_init_queue().at(0);
 
                     if(is_init_assignment) { // add tokents
-                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
-                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
-                        RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
-                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
-                        SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
+                        if(!is_defined) {
+                            RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
+                            cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
+                            RESPECTIVE_NODE->add_children(Node(false, "proprrty_name", term_stack.get_init_queue().at(1)));
+                            cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
+                            RESPECTIVE_NODE->add_children(Node(true, "="));
+                            SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
+                            is_defined = true;
+                        }
                     } else {
                         RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(0)));
                         cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(variable_name_definition) added"<< endl;
@@ -120,6 +131,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     
                     if(second_stack_size == 1) {
                         string assigned = second_part.get_init_queue().at(0);
+                        cout<< "Assigneed"<< assigned<< endl;
 
                         if(is_function_call(assigned)) {
                             int i = 0;
@@ -176,7 +188,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                             if(type.compare("float") == 0 || type.compare("double") == 0) {
                                 if(CFG().is_decimal(assigned.c_str())) {
                                     string new_float = type;
-                                    type += assigned;
+                                    new_float += assigned;
                                     RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
                                     cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
                                 } else {
@@ -192,7 +204,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
                                 if(CFG().is_int(assigned.c_str())) {
                                     string new_float = type;
-                                    type += assigned;
+                                    new_float += assigned;
                                     RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
                                     cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
                                 } else {
@@ -211,12 +223,12 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     // string var_name = term_stack
                 }
                 
-            }
+            // }
 
         } else {
 
+            bool arithmetic_op_found;
             for(int i=0; i<stack_size; i++) {
-                bool arithmetic_op_found;
 
                 for(int x=0; x<4; x++) {
                     arithmetic_op_found = term_stack.get_queue().at(i).compare(equation_tokens[x]) == 0;
@@ -225,6 +237,10 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         break;
 
                 }
+
+                if(arithmetic_op_found)
+                    break;
+            }
 
                 if(arithmetic_op_found) {
                     CFG cfg;
@@ -317,7 +333,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         }
                     }
                 }
-            }
+            // }
 
         }
     }

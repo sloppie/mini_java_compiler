@@ -154,6 +154,7 @@ void Lexer::unpack_class(string code) {
                             unpack_block(function_block, &function_declaration); // Node memory address passed to allow easy adding of nodes to the parent node
                             is_func = true;
                             CURSOR--; // reset the cursor back by one so that it does not skip over a character in the while loop
+                            class_declaration.add_children(function_declaration);
                         }
 
                         // below is the piece of code that will be used to pass function calls 
@@ -189,6 +190,7 @@ void Lexer::unpack_class(string code) {
                             class_var_dec.add_children(Node(true, ";"));
                             term_found = "";
 
+                            class_declaration.add_children(class_var_dec);
                             // since the line has already been added,
                             // we need to skip over to the first new line that we find
                             while(code[CURSOR] != '\n') {
