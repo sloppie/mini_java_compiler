@@ -44,6 +44,7 @@ class Parser {
         SymbolTable* SYMBOL_TABLE;
         Node* PARSE_TREE;
         int LEVEL = 0;
+        int TEST_ID_NUMBER = 0;
 
 };
 

@@ -4,6 +4,7 @@
 #include "../lexer/error_stream.h"
 #include "../lexer/token_stream.h"
 #include "../parser/parser.h"
+#include "../code_gen/postfix_it.h"
 #include "../utilities/function_table.h"
 #include "../utilities/package_table.h"
 #include "../utilities/symbol_table.h"
@@ -25,16 +26,28 @@ int main() {
     PackageTable* PACKAGE_TABLE = new PackageTable();
     TokenStream* TOKEN_STREAM = new TokenStream();
 
-    lexer_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE, TOKEN_STREAM, ERROR_STREAM);
+    // lexer_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE, TOKEN_STREAM, ERROR_STREAM);
 
-    if(ERROR_STREAM->has_messages("ERRORS")) {
-        ERROR_STREAM->print_errors();
-    } else {
-        ERROR_STREAM->print_errors();
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
-    }
+    // if(ERROR_STREAM->has_messages("ERRORS")) {
+    //     ERROR_STREAM->print_errors();
+    // } else {
+    //     ERROR_STREAM->print_errors();
+    //     Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+    //     Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+    //     Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+    // }
 
+    Node line(false, "line");
+    line.add_children(Node(false, "int2"));
+    line.add_children(Node(true, "*"));
+    line.add_children(Node(false, "int2"));
+    line.add_children(Node(true, "/"));
+    line.add_children(Node(false, "int2"));
+    line.add_children(Node(true, "-"));
+    line.add_children(Node(false, "int2"));
+    line.add_children(Node(true, "+"));
+    line.add_children(Node(false, "int2"));
+
+    Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(ICG::postfix_it(line));
     return 0;
 }

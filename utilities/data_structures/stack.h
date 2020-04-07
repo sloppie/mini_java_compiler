@@ -14,6 +14,13 @@ class Stack {
             stack.pop_back();
         }
 
+        T pop_val() {
+            T data = stack.at(stack.size() - 1);
+            stack.pop_back();
+
+            return data;
+        }
+
         void push(T new_val) {
             stack.push_back(new_val);
         }
