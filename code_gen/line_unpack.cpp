@@ -1,24 +1,194 @@
 #include "code_gen.h"
 #include "symbol_associativity.h"
+#include "postfix_it.h"
 
 void ICG::CodeGenerator::unpack_line(Node line) {
+    Node postfix_it(Node);
+    std::string intermediate_code = "";
+
     Stack<char> ASSOC_STACK;    
     Node new_tree(false, "new_struct");
+    bool is_assignment = false;
+    bool op_found = false;
+    Stack<Node> term_stack;
+    Queue<Node> after_assignment_stack;
 
     for(Node children: line.get_children()) {
-        symbol found_char;
-
-
+        
         if(children.is_terminal()) {
             
-            if(children.get_name().compare("+") == 0) {
-                found_char = OP::PLUS();
-            } else if(children.get_name().compare("-") == 0) {
-                found_char = OP::MINUS();
-            } else if(children.get_name().compare("*") == 0) {
-                found_char = OP::MULT();
-            } else if(children.get_name().compare("/") == 0) {
-                found_char = OP::DIV();
+            if(children.get_name().compare("=") == 0) {
+                is_assignment = true;
+                continue;
+            }
+
+            if(!op_found)
+                op_found = (
+                    children.get_name().compare("+") == 0 ||
+                    children.get_name().compare("-") == 0 ||
+                    children.get_name().compare("*") == 0 ||
+                    children.get_name().compare("/") == 0
+                );
+
+            if(children.get_name().compare(";") == 0)
+                break;
+
+
+        }
+
+        if(is_assignment) {
+            after_assignment_stack.enqueue(children);
+        } else {
+            term_stack.push(children);
+        }
+
+    }
+
+    if(is_assignment) { // this is because we create two stacks if it is an asssignent
+    
+        std::string new_term_id = "";
+        
+        if(term_stack.get_stack().size() > 1) { // creates a new term id because this directly means this is an initialised var
+            std::string t_id = get_term_id();
+            new_term_id = t_id;
+
+            NEW_VAR_LOOKUP.add_member(
+                term_stack.get_stack().at(1).get_value(),
+                term_stack.get_stack().at(0).get_value(),
+                t_id
+            );
+
+        } else { // searches for the corresponding term_id since this is clearly not a new initialisation
+            new_term_id = NEW_VAR_LOOKUP.find(term_stack.get_stack().at(0).get_value())[2];
+        }
+
+        if(op_found) {
+            // create a new node that will hold the equation.
+            // This equation will be rarranged to a postfix
+            Node postfixed(false, "line");
+            
+            for(int i=0; i<after_assignment_stack.get_init_queue().size(); i++) {
+                postfixed.add_children(after_assignment_stack.dequeue(Node(true, "something")));
+            }
+            
+            postfixed = ICG::postfix_it(postfixed);
+
+            intermediate_code = unpack_equation(postfixed, new_term_id);
+            cout<< intermediate_code;
+
+        } else { // operation not found, hence must be a function call or intitialised to the value of another variable
+            intermediate_code += new_term_id;
+            intermediate_code += " = ";
+            
+            Node assigned = after_assignment_stack.dequeue(Node(true, "#"));
+
+            if(assigned.get_name().compare("function_call") == 0) {
+                
+                // traverse through the node to make sure the function call is recreated.
+                // Also try to make sure the variables passed to the function are fetched by their
+                // new term_ids as store in the NEW_VAR_LOOKUP SymbolTable class
+                for(Node node: term_stack.get_stack().at(0).get_children()) {
+                    
+                    if(node.is_terminal()) { // allow the skipping of the semi-colon which is no longer usable
+
+                        if(node.get_name().compare(";") != 0) {
+                            intermediate_code += node.get_name();
+                            intermediate_code += " ";
+                        } 
+                        
+                    } else {
+
+                        if(node.get_name().compare("function_call") == 0) {
+                            intermediate_code += node.get_value();
+                        } else if(node.get_name().compare("arguments") == 0) {
+                            // this part assumes that onlu variables are passes onto the function call
+                            intermediate_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
+                        }
+
+                    }
+
+                }
+
+                intermediate_code += "\n";
+
+            } else { // means the new_var is assigned to a pre-existing variable or to a number(float, double or int)
+
+                if(assigned.get_name().compare("number") == 0)
+                    intermediate_code += assigned.get_value();
+                else
+                    intermediate_code += NEW_VAR_LOOKUP.find(assigned.get_value())[2];
+                
+                intermediate_code += "\n";
+            }
+        }
+
+    } else { // no assignment found in line
+
+        if(op_found) {
+            Node postfixed(false, "line");
+            
+            for(int i=0; i<term_stack.get_stack().size(); i++) {
+                postfixed.add_children(term_stack.get_stack().at(i));
+            }
+
+            postfixed = ICG::postfix_it(postfixed);
+
+            std::string code_generated = unpack_equation(postfixed); 
+            cout<< code_generated;
+        } else {
+
+            // means is an initialisation because the stack is greater than 1 even though its not an operation
+            if(term_stack.get_stack().size() > 1) {
+                std::string term_id = get_term_id();
+                intermediate_code += term_id;
+                intermediate_code += " = ";
+                
+                if(term_stack.get_stack().at(0).get_value().compare("int") == 0)
+                    intermediate_code += "0\n";
+                else 
+                    intermediate_code += "0.0";
+                
+                NEW_VAR_LOOKUP.add_member( // create a new slot for a new variable initialisation
+                    term_stack.get_stack().at(1).get_value(),
+                    term_stack.get_stack().at(0).get_value(), 
+                    term_id
+                );
+
+            } else { // is a function call or just a variable name written in a line
+
+                // handles the case of it being a function call.
+                // The logicc of only handling the function call is that,
+                // if it was just a variable call, the variable was not used,
+                // thus that was misuse of a line
+                if(term_stack.get_stack().at(0).get_name().compare("function_call") == 0) {
+
+                    // traverse through the node to make sure the function call is recreated.
+                    // Also try to make sure the variables passed to the function are fetched by their
+                    // new term_ids as store in the NEW_VAR_LOOKUP SymbolTable class
+                    for(Node node: term_stack.get_stack().at(0).get_children()) {
+                        
+                        if(node.is_terminal()) { // allow the skipping of the semi-colon which is no longer usable
+
+                            if(node.get_name().compare(";") != 0) {
+                                intermediate_code += node.get_name();
+                                intermediate_code += " ";
+                            } 
+                            
+                        } else {
+
+                            if(node.get_name().compare("function_call") == 0) {
+                                intermediate_code += node.get_value();
+                            } else if(node.get_name().compare("arguments") == 0) {
+                                // this part assumes that onlu variables are passes onto the function call
+                                intermediate_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
+                            }
+
+                        }
+
+                    }
+
+                }
+
             }
 
         }

@@ -1,12 +1,16 @@
 #ifndef POSTFIX_IT_H
 #define POSTFIX_IT_H
 
-#include "code_gen.h"
 #include "symbol_associativity.h"
+#include "../lexer/token_stream.h"
+#include "../utilities/symbol_table.h"
+#include "../utilities/data_structures/node.h"
+#include "../utilities/data_structures/queue.h"
+#include "../utilities/data_structures/stack.h"
 
 namespace ICG {
 
-    Node postfix_it(Node line) {
+    inline Node postfix_it(Node line) {
         Stack<Node> equation_stack;
         Stack<symbol> operand_stack;
 
@@ -98,6 +102,7 @@ namespace ICG {
 
         return postfix_equation;
     }
+
 
 }
 
