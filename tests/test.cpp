@@ -67,10 +67,45 @@ int main() {
     line_2.add_children(Node(true, "+"));
     line_2.add_children(Node(false, "number", "int8762"));
     cout<< endl<< "\033[1;21;33mIntermediate Code\033[0m"<< endl<< endl;
-    // cout<< ICG::CodeGenerator(SYMBOL_TABLE, TOKEN_STREAM).unpack_equation(ICG::postfix_it(line));
+
+    // condition_unpack
+    // Equivalent condition: (myVar >= myVar && myVar <= myVar || myVar <= myVar && myVar <= myVar || myVar <= myVar)
+    Node CONDITION(false, "condition");
+    CONDITION.add_children(Node(true, "("));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "comparator", ">="));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "connector", "&&"));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "comparator", "<="));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "connector", "||"));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "comparator", "<="));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "connector", "&&"));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "comparator", "<="));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "connector", "||"));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(false, "comparator", "<="));
+    CONDITION.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION.add_children(Node(true, ")"));
+
+    Node CONDITION_2(false, "condition");
+    CONDITION_2.add_children(Node(true, "("));
+    CONDITION_2.add_children(Node(false, "condition_parameter", "myVar"));
+    CONDITION_2.add_children(Node(false, "comparator", ">="));
+    CONDITION_2.add_children(Node(false, "condition_parameter", "myVar"));
+
     ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
     code_gen.unpack_line(line);
     code_gen.unpack_line(line_2);
+    cout<< endl<< "\033[1;21;33mUnpacking chained condition\033[0m"<< endl<< endl;
+    code_gen.unpack_condition(CONDITION);
+    cout<< endl<< "\033[1;21;33mUnpacking single condition\033[0m"<< endl<< endl;
+    code_gen.unpack_condition(CONDITION_2);
 
     return 0;
 }

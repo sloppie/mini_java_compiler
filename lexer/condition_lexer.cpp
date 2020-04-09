@@ -7,6 +7,7 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
     Node CONDITION(false, "condition");
     const char* condition = source_code.c_str();
     Queue<string> condition_queue;
+    CONDITION.add_children(Node(true, "("));
     int CURSOR = 1;
     CFG cfg;
 
@@ -101,11 +102,12 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
             break_down_condition(conditions.c_str(), &new_condition);
             CONDITION.add_children(new_condition);
         } else {
-            CONDITION.add_children(Node(true, "comparator", conditions));
+            CONDITION.add_children(Node(true, "connector", conditions));
         }
 
     }
 
+    CONDITION.add_children(Node(true, ")"));
     // push in token stream
     CONDITION_CARRIER->add_children(CONDITION);
 }
@@ -163,7 +165,7 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                             error_message += "\033[0m added as \033[1;0mundefined\033[0m token";
 
                             ERROR_STREAM->add_warning(error_message);
-                            // cout<< "Token: '"<< last_cond<<"' added as \"undefined_token\""<< endl;
+                            condn.add_children(Node(false, "condition_parameter", "undefined"));
                         }
 
                         last_cond_type = "variable";
@@ -180,7 +182,6 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                             error_message += "\033[0m passed as a condition param";
 
                             (*ERROR_STREAM)<< error_message;
-                            // cout<< "INVALID token: "<< last_cond<< " passed as a condition param"<< endl;
                         }
 
                     }
@@ -206,7 +207,6 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                             error_message += "\033[0m";
 
                             (*ERROR_STREAM)<< error_message;
-                            // cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
                         }
 
                     } else {
@@ -215,7 +215,6 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                         error_message += "\033[0m";
 
                         (*ERROR_STREAM)<< error_message;
-                        // cout<< "Invalid progression. Expcted variable or condition before comparisson operator"<< comparator_token<< endl;
                     }
 
                     CURSOR++;
@@ -231,7 +230,6 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                         error_message += "\033[0m";
 
                         (*ERROR_STREAM)<< error_message;
-                        // cout<< "invalid token progression: \""<< comparator_token<< "\""<< endl;
                         CURSOR++;
                     }
 
@@ -262,7 +260,6 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
             error_message += "\033[0m at the end of condition";
 
             (*ERROR_STREAM)<< error_message;
-            // cout<< "Invalid token '"<< last_cond<<"'at end of condition"<< endl;
         } else {
             conditions.push_back(last_cond);
             condn.add_children(Node(false, "condition_parameter", last_cond));
