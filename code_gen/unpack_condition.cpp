@@ -10,7 +10,8 @@
 //     connector
 //     ) TERMINAL
 
-void ICG::CodeGenerator::unpack_condition(Node condition) {
+std::string ICG::CodeGenerator::unpack_condition(Node condition) {
+    std::string generated_code = "";
     bool connector_found = false;
     bool comparator_found = false;
 
@@ -28,9 +29,11 @@ void ICG::CodeGenerator::unpack_condition(Node condition) {
 
     }
 
-    intermediate_code = (connector_found)? unpack_chained_condition(condition): unpack_single_condition(condition);
+    generated_code = (connector_found)? unpack_chained_condition(condition): unpack_single_condition(condition);
 
-    cout<< intermediate_code<< endl;
+    // cout<< intermediate_code<< endl;
+
+    return generated_code;
 }
 
 

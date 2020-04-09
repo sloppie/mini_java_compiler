@@ -24,7 +24,7 @@ namespace ICG {
             // unpacks an arithmetic equation without an assignment operator
             std::string unpack_equation(Node);
             //unpacks the condition Node passed to it
-            void unpack_condition(Node);
+            std::string unpack_condition(Node);
             // unpacks a chained condition (i.e this condition has a connector inside it)
             std::string unpack_chained_condition(Node);
             // unpacks a basic condition (i.e this condition does not have a connector in it)
@@ -35,10 +35,15 @@ namespace ICG {
             //  confusion as it assigns the condition terms to the next term which will
             // most likely be from the last condition
             std::string unpack_single_condition(Node, std::string);
+            // this is used to unpaack the if_condition passed to it as a node
+            // with the assistance of ICG::CodeGenerator::INDENT it helps know the amount of
+            // tabs to indent by
+            void unpack_if(Node);
 
         private:
-            std::string intermediate_code = "";
             int TEST_ID = 0;
+            int INDENT = 0;
+            std::string intermediate_code = "";
             TokenStream* TOKEN_STREAM;
             SymbolTable* SYMBOL_TABLE;
             SymbolTable NEW_VAR_LOOKUP;
