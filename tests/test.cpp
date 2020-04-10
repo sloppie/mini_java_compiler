@@ -15,7 +15,8 @@
 // #include "condition_tests.cpp"
 #include "lexer_tests/lexer_tests.cpp"
 
-#include "code_gen_tests/if_else_tests.cpp"
+// #include "code_gen_tests/if_else_tests.cpp"
+#include "code_gen_tests/while_tests.cpp"
 
 // int line_unpack_tests(PackageTable*, FunctionTable*, SymbolTable*);
 // int function_tests(PackageTable*, FunctionTable*, SymbolTable*);
@@ -47,7 +48,7 @@ int main() {
 
     ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
     cout<< endl<< "\033[1;21;33mUnpacking example if_else Node\033[0m"<< endl<< endl;
-    cout<< code_gen.unpack_if(if_else_tests().at(0));
+    cout<< code_gen.unpack_while(while_tests());
 
     return 0;
 }

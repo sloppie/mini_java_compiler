@@ -38,9 +38,9 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
             if(child.get_name().compare("if") == 0) {
                 if(!opening_terminal) {
                     generated_code += indent;
-                    generated_code += "if";
+                    generated_code += "if(";
                 } else {
-                    generated_code += " if";
+                    generated_code += " if(";
                 }
             } else if(child.get_name().compare("else") == 0) {
                 generated_code += " else";
@@ -54,6 +54,7 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
                 // the logic is theat it can only dequeue as much as it queued
                 // hence there is no overwhelming need for queue size check :)
                 generated_code += condition_result_queue.dequeue("#");
+                generated_code += ") ";
             } else if(child.get_name().compare("block_code") == 0) {
                 INDENT++;
                 // unpack_bloc goes here

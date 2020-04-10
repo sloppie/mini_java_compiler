@@ -17,9 +17,7 @@ std::vector<Node> if_else_tests() {
 
     Node if_else(false, "if_else");
     if_else.add_children(Node(true, "if"));
-    if_else.add_children(Node(true, "("));
     if_else.add_children(condition_tests()); // adds condition defined in "condition_tests.cpp"
-    if_else.add_children(Node(true, ")"));
     if_else.add_children(block_tests());
 
     example_ifs.push_back(if_else);
