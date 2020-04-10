@@ -1,14 +1,14 @@
 #include<iostream>
 
-#include "../types.h"
-#include "../lexer/lexer.h"
-#include "../utilities/function_table.h"
-#include "../utilities/package_table.h"
-#include "../utilities/symbol_table.h"
-#include "../language_cfg/language_cfg.h"
-#include "../utilities/data_structures/queue.h"
-#include "../utilities/data_structures/stack.h"
-#include "../utilities/fs.h"
+#include "../../types.h"
+#include "../../lexer/lexer.h"
+#include "../../utilities/function_table.h"
+#include "../../utilities/package_table.h"
+#include "../../utilities/symbol_table.h"
+#include "../../language_cfg/language_cfg.h"
+#include "../../utilities/data_structures/queue.h"
+#include "../../utilities/data_structures/stack.h"
+#include "../../utilities/fs.h"
 
 using namespace std;
 using namespace fs;

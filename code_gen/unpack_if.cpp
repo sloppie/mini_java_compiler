@@ -24,7 +24,7 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
             generated_code += unpack_condition(child);
             // the last term id is the result of the condition
             std::string term_id = "term_";
-            term_id += to_string(TEST_ID);
+            term_id += to_string(TEST_ID - 1);
             condition_result_queue.enqueue(term_id);
         }
     }
@@ -64,4 +64,6 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
         }
     }
 
+    generated_code += function_code;
+    return generated_code;
 }

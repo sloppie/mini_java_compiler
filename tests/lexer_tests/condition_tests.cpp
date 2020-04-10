@@ -1,14 +1,14 @@
 #include<iostream>
 
-#include "../types.h"
-#include "../lexer/lexer.h"
-#include "../utilities/function_table.h"
-#include "../utilities/package_table.h"
-#include "../utilities/symbol_table.h"
+#include "../../types.h"
+#include "../../lexer/lexer.h"
+#include "../../utilities/function_table.h"
+#include "../../utilities/package_table.h"
+#include "../../utilities/symbol_table.h"
 
 
 int condition_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, SymbolTable* SYMBOL_TABLE) {
-    string sample_function = "int main() {}";
+    std::string sample_function = "int main() {}";
     
     Lexer lexical_analyser(sample_function, SYMBOL_TABLE, PACKAGE_TABLE, FUNCTION_TABLE);
 

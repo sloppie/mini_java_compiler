@@ -8,7 +8,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
     // get the indent needed for the specific block this line is being dissected from
     std::string indent = "";
 
-    for(int i=0; i<(is_conditional_block)? 1: INDENT; i++) {
+    for(int i=0; i<((is_conditional_block)? 1: INDENT); i++) {
 
         for(int x=0; x<4; x++) {
             indent += ' ';
@@ -144,7 +144,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
 
             std::string code_generated = unpack_equation(postfixed, is_conditional_block); 
         } else {
-            generated_code += (is_conditional_block)? "": indent;
+            generated_code += (is_conditional_block)? "    ": indent;
 
             // means is an initialisation because the stack is greater than 1 even though its not an operation
             if(term_stack.get_stack().size() > 1) {

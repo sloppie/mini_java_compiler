@@ -55,7 +55,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
                     // else:
                     //     the code takes an operand and operates on two previous nodes so as to kickstart the equation
                     if(first_handled) {
-                        code_generated += (is_conditional_block)? "": indent;
+                        code_generated += (is_conditional_block)? "    ": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         code_generated += result_stored;
@@ -79,7 +79,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
 
                         }
 
-                        code_generated += (is_conditional_block)? "": indent;
+                        code_generated += (is_conditional_block)? "    ": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
@@ -160,7 +160,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, bool is_conditio
                     // else:
                     //     the code takes an operand and operates on two previous nodes so as to kickstart the equation
                     if(first_handled) {
-                        code_generated += (is_conditional_block)? "": indent;
+                        code_generated += (is_conditional_block)? "    ": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         code_generated += result_stored;
@@ -184,7 +184,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, bool is_conditio
 
                         }
 
-                        code_generated += (is_conditional_block)? "": indent;
+                        code_generated += (is_conditional_block)? "    ": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
@@ -202,7 +202,6 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, bool is_conditio
                     packed[i] = true;
                     break;
                 }
-                break;
             }
 
         }
