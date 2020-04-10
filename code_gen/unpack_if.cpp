@@ -57,7 +57,7 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
             } else if(child.get_name().compare("block_code") == 0) {
                 INDENT++;
                 // unpack_bloc goes here
-                unpack_conditional_block(child);
+                generated_code += unpack_conditional_block(child);
                 INDENT--;
             }
 

@@ -5,7 +5,6 @@
 
 #include "../lexer/token_stream.h"
 #include "../utilities/symbol_table.h"
-#include "../utilities/function_table.h"
 #include "../utilities/data_structures/node.h"
 #include "../utilities/data_structures/queue.h"
 #include "../utilities/data_structures/stack.h"
@@ -17,7 +16,8 @@ namespace ICG {
             CodeGenerator(
                 SymbolTable* SYMBOL_TABLE,
                 TokenStream* TOKEN_STREAM
-            ) {}
+            ): SYMBOL_TABLE(SYMBOL_TABLE),
+                TOKEN_STREAM(TOKEN_STREAM) {}
             // unpacks a line into its equivalent three step process code.
             // since the function is multipurpose,
             // it is used by CodeGenerator::unpack_block and CodeGenerator::unpack_conditional_block.
@@ -48,7 +48,13 @@ namespace ICG {
             // This function also keeps tab of indentation so as to make sure everything is readable
             // for the user in terms of block scope and what-not. 
             std::string unpack_block(Node);
+            // this is used to handle the back and forth between unpack_line, unpack_if and unpack_while.
+            // This function also keeps tab of indentation so as to make sure everything is readable
+            // for the user in terms of block scope and what-not. 
             std::string unpack_conditional_block(Node);
+            // The pack below is used to simplify the while-loop into a simple conditional that will be
+            // easier to translate to the equivalent assembly language code
+            std::string unpack_while(Node);
 
         private:
             int TEST_ID = 0;
@@ -60,7 +66,6 @@ namespace ICG {
             TokenStream* TOKEN_STREAM;
             SymbolTable* SYMBOL_TABLE;
             SymbolTable NEW_VAR_LOOKUP;
-            FunctionTable ANONYMOUS_FUNC_TABLE;
             std::string get_term_id();
 
             // indentation for block labels

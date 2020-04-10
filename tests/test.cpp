@@ -100,8 +100,8 @@ int main() {
     CONDITION_2.add_children(Node(false, "condition_parameter", "myVar"));
 
     ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
-    code_gen.unpack_line(line);
-    code_gen.unpack_line(line_2);
+    code_gen.unpack_line(line, true);
+    code_gen.unpack_line(line_2, true);
     cout<< endl<< "\033[1;21;33mUnpacking chained condition\033[0m"<< endl<< endl;
     code_gen.unpack_condition(CONDITION);
     cout<< endl<< "\033[1;21;33mUnpacking single condition\033[0m"<< endl<< endl;
