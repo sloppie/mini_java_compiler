@@ -8,3 +8,12 @@ std::string ICG::CodeGenerator::get_term_id() {
 
     return term_id;
 }
+
+
+std::string ICG::CodeGenerator::get_func_id() {
+    std::string term_id = "func_";
+    term_id += to_string(FUNC_ID);
+    FUNC_ID++;
+
+    return term_id;
+}

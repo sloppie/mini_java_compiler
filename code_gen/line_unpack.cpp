@@ -2,9 +2,19 @@
 #include "symbol_associativity.h"
 #include "postfix_it.h"
 
-void ICG::CodeGenerator::unpack_line(Node line) {
+std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block) {
     Node postfix_it(Node);
-    std::string intermediate_code = "";
+    std::string generated_code = "";
+    // get the indent needed for the specific block this line is being dissected from
+    std::string indent = "";
+
+    for(int i=0; i<(is_conditional_block)? 1: INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
 
     Stack<char> ASSOC_STACK;    
     Node new_tree(false, "new_struct");
@@ -73,12 +83,11 @@ void ICG::CodeGenerator::unpack_line(Node line) {
             
             postfixed = ICG::postfix_it(postfixed);
 
-            intermediate_code = unpack_equation(postfixed, new_term_id);
-            cout<< intermediate_code;
+            generated_code = unpack_equation(postfixed, new_term_id, is_conditional_block);
 
         } else { // operation not found, hence must be a function call or intitialised to the value of another variable
-            intermediate_code += new_term_id;
-            intermediate_code += " = ";
+            generated_code += new_term_id;
+            generated_code += " = ";
             
             Node assigned = after_assignment_stack.dequeue(Node(true, "#"));
 
@@ -92,33 +101,33 @@ void ICG::CodeGenerator::unpack_line(Node line) {
                     if(node.is_terminal()) { // allow the skipping of the semi-colon which is no longer usable
 
                         if(node.get_name().compare(";") != 0) {
-                            intermediate_code += node.get_name();
-                            intermediate_code += " ";
+                            generated_code += node.get_name();
+                            generated_code += " ";
                         } 
                         
                     } else {
 
                         if(node.get_name().compare("function_call") == 0) {
-                            intermediate_code += node.get_value();
+                            generated_code += node.get_value();
                         } else if(node.get_name().compare("arguments") == 0) {
                             // this part assumes that onlu variables are passes onto the function call
-                            intermediate_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
+                            generated_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
                         }
 
                     }
 
                 }
 
-                intermediate_code += "\n";
+                generated_code += "\n";
 
             } else { // means the new_var is assigned to a pre-existing variable or to a number(float, double or int)
 
                 if(assigned.get_name().compare("number") == 0)
-                    intermediate_code += assigned.get_value();
+                    generated_code += assigned.get_value();
                 else
-                    intermediate_code += NEW_VAR_LOOKUP.find(assigned.get_value())[2];
+                    generated_code += NEW_VAR_LOOKUP.find(assigned.get_value())[2];
                 
-                intermediate_code += "\n";
+                generated_code += "\n";
             }
         }
 
@@ -133,20 +142,20 @@ void ICG::CodeGenerator::unpack_line(Node line) {
 
             postfixed = ICG::postfix_it(postfixed);
 
-            std::string code_generated = unpack_equation(postfixed); 
-            cout<< code_generated;
+            std::string code_generated = unpack_equation(postfixed, is_conditional_block); 
         } else {
+            generated_code += (is_conditional_block)? "": indent;
 
             // means is an initialisation because the stack is greater than 1 even though its not an operation
             if(term_stack.get_stack().size() > 1) {
                 std::string term_id = get_term_id();
-                intermediate_code += term_id;
-                intermediate_code += " = ";
+                generated_code += term_id;
+                generated_code += " = ";
                 
                 if(term_stack.get_stack().at(0).get_value().compare("int") == 0)
-                    intermediate_code += "0\n";
+                    generated_code += "0\n";
                 else 
-                    intermediate_code += "0.0";
+                    generated_code += "0.0";
                 
                 NEW_VAR_LOOKUP.add_member( // create a new slot for a new variable initialisation
                     term_stack.get_stack().at(1).get_value(),
@@ -170,17 +179,17 @@ void ICG::CodeGenerator::unpack_line(Node line) {
                         if(node.is_terminal()) { // allow the skipping of the semi-colon which is no longer usable
 
                             if(node.get_name().compare(";") != 0) {
-                                intermediate_code += node.get_name();
-                                intermediate_code += " ";
+                                generated_code += node.get_name();
+                                generated_code += " ";
                             } 
                             
                         } else {
 
                             if(node.get_name().compare("function_call") == 0) {
-                                intermediate_code += node.get_value();
+                                generated_code += node.get_value();
                             } else if(node.get_name().compare("arguments") == 0) {
                                 // this part assumes that onlu variables are passes onto the function call
-                                intermediate_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
+                                generated_code += NEW_VAR_LOOKUP.find(node.get_value())[2];
                             }
 
                         }
@@ -195,4 +204,5 @@ void ICG::CodeGenerator::unpack_line(Node line) {
 
     }
 
+    return generated_code;
 }

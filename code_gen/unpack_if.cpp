@@ -1,6 +1,6 @@
 #include "code_gen.h"
 
-void ICG::CodeGenerator::unpack_if(Node if_else) {
+std::string ICG::CodeGenerator::unpack_if(Node if_else) {
     std::string generated_code = "";
     std::string indent = "";
     Queue<std::string> condition_result_queue;
@@ -57,7 +57,7 @@ void ICG::CodeGenerator::unpack_if(Node if_else) {
             } else if(child.get_name().compare("block_code") == 0) {
                 INDENT++;
                 // unpack_bloc goes here
-                // unpack_block(child);
+                unpack_conditional_block(child);
                 INDENT--;
             }
 

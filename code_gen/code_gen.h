@@ -5,6 +5,7 @@
 
 #include "../lexer/token_stream.h"
 #include "../utilities/symbol_table.h"
+#include "../utilities/function_table.h"
 #include "../utilities/data_structures/node.h"
 #include "../utilities/data_structures/queue.h"
 #include "../utilities/data_structures/stack.h"
@@ -17,12 +18,16 @@ namespace ICG {
                 SymbolTable* SYMBOL_TABLE,
                 TokenStream* TOKEN_STREAM
             ) {}
-            // unpacks a line into its equivalent three step process code
-            void unpack_line(Node);
+            // unpacks a line into its equivalent three step process code.
+            // since the function is multipurpose,
+            // it is used by CodeGenerator::unpack_block and CodeGenerator::unpack_conditional_block.
+            // As such, the boolean passed in as the second parameter is used to distinguish between
+            // which parent function is calling them.
+            std::string unpack_line(Node, bool);
             // unpacks an equation that has an assignment operator
-            std::string unpack_equation(Node, std::string);
+            std::string unpack_equation(Node, std::string, bool);
             // unpacks an arithmetic equation without an assignment operator
-            std::string unpack_equation(Node);
+            std::string unpack_equation(Node, bool);
             //unpacks the condition Node passed to it
             std::string unpack_condition(Node);
             // unpacks a chained condition (i.e this condition has a connector inside it)
@@ -38,17 +43,31 @@ namespace ICG {
             // this is used to unpaack the if_condition passed to it as a node
             // with the assistance of ICG::CodeGenerator::INDENT it helps know the amount of
             // tabs to indent by
-            void unpack_if(Node);
+            std::string unpack_if(Node);
+            // this is used to handle the back and forth between unpack_line, unpack_if and unpack_while.
+            // This function also keeps tab of indentation so as to make sure everything is readable
+            // for the user in terms of block scope and what-not. 
+            std::string unpack_block(Node);
+            std::string unpack_conditional_block(Node);
 
         private:
             int TEST_ID = 0;
             int INDENT = 0;
+            int FUNC_ID = 0;
             std::string intermediate_code = "";
+            std::string function_code = "";
+            
             TokenStream* TOKEN_STREAM;
             SymbolTable* SYMBOL_TABLE;
             SymbolTable NEW_VAR_LOOKUP;
-
+            FunctionTable ANONYMOUS_FUNC_TABLE;
             std::string get_term_id();
+
+            // indentation for block labels
+            std::string label_indent = "    ";
+
+            // gets an id for an anonymous function created to hous the block code
+            std::string get_func_id();
 
     };
 

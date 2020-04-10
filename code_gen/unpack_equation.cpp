@@ -3,7 +3,7 @@
 // function prototypes
 bool all_unpacked(bool*, int);
 
-std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assigned_to) {
+std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assigned_to, bool is_conditional_block) {
     std::string code_generated = "";
     int eq_size = postfixed.get_children().size();
     bool packed[eq_size];
@@ -11,6 +11,17 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
     for(int i=0; i<eq_size; i++) {
         packed[i] = false;
     }
+
+    std::string indent = "";
+
+    for(int i=0; i<INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
+
 
     std::string result_stored = assigned_to;
     bool first_handled = false;
@@ -44,6 +55,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
                     // else:
                     //     the code takes an operand and operates on two previous nodes so as to kickstart the equation
                     if(first_handled) {
+                        code_generated += (is_conditional_block)? "": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         code_generated += result_stored;
@@ -67,6 +79,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
 
                         }
 
+                        code_generated += (is_conditional_block)? "": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
@@ -96,7 +109,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
 }
 
 
-std::string ICG::CodeGenerator::unpack_equation(Node postfixed) {
+std::string ICG::CodeGenerator::unpack_equation(Node postfixed, bool is_conditional_block) {
     std::string code_generated = "";
     int eq_size = postfixed.get_children().size();
     bool packed[eq_size];
@@ -104,6 +117,17 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed) {
     for(int i=0; i<eq_size; i++) {
         packed[i] = false;
     }
+
+    std::string indent = "";
+
+    for(int i=0; i<INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
+
 
     std::string result_stored = get_term_id();
     bool first_handled = false;
@@ -136,6 +160,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed) {
                     // else:
                     //     the code takes an operand and operates on two previous nodes so as to kickstart the equation
                     if(first_handled) {
+                        code_generated += (is_conditional_block)? "": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         code_generated += result_stored;
@@ -159,6 +184,7 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed) {
 
                         }
 
+                        code_generated += (is_conditional_block)? "": indent;
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
