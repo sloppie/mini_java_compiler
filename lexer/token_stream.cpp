@@ -17,3 +17,7 @@ Node TokenStream::next_token() {
     }
     
 }
+
+void TokenStream::reset_position() {
+    POSITION = 0;
+}

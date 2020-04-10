@@ -18,6 +18,14 @@ namespace ICG {
                 TokenStream* TOKEN_STREAM
             ): SYMBOL_TABLE(SYMBOL_TABLE),
                 TOKEN_STREAM(TOKEN_STREAM) {}
+            // unpacks class_variable_declarations (cvd)
+            // it restructures the Node by removing the access_moditfier.
+            // it the afterwards passes the restructured Node to CodeGenerator::unpack_line
+            std::string unpack_cvd(Node);
+            // with the help of methods declared below it, unpacks the function_declaration
+            std::string unpack_function(Node);
+            // unpacks the parameters part of the function
+            std::string unpack_parameters(Node);
             // unpacks a line into its equivalent three step process code.
             // since the function is multipurpose,
             // it is used by CodeGenerator::unpack_block and CodeGenerator::unpack_conditional_block.
@@ -55,6 +63,9 @@ namespace ICG {
             // The pack below is used to simplify the while-loop into a simple conditional that will be
             // easier to translate to the equivalent assembly language code
             std::string unpack_while(Node);
+            // this method is used to co-ordinate all the methods defined ablove to facilitate the
+            // unpacking of the class variables (i.e Methods and Variable_declarations).
+            void unpack_class();
 
         private:
             int TEST_ID = 0;

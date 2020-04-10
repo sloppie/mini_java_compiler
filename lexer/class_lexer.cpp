@@ -151,7 +151,9 @@ void Lexer::unpack_class(string code) {
                             cout<< class_code[CURSOR]<< endl;
                             Node function_declaration = FUNCTION_TABLE->scan_function(code, CURSOR);
                             string function_block = Lexer::find_bracketed_code(code, '{', CURSOR);
-                            unpack_block(function_block, &function_declaration); // Node memory address passed to allow easy adding of nodes to the parent node
+                            Node blc_code(false, "block_code");
+                            unpack_block(function_block, &blc_code); // Node memory address passed to allow easy adding of nodes to the parent node
+                            function_declaration.add_children(blc_code);
                             is_func = true;
                             CURSOR--; // reset the cursor back by one so that it does not skip over a character in the while loop
                             class_declaration.add_children(function_declaration);

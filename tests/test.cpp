@@ -45,7 +45,6 @@ int main() {
 
     cout<< endl<< "\033[1;21;33mIntermediate Code\033[0m"<< endl<< endl;
 
-
     ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
     cout<< endl<< "\033[1;21;33mUnpacking example if_else Node\033[0m"<< endl<< endl;
     cout<< code_gen.unpack_while(while_tests());

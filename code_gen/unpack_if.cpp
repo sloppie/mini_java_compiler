@@ -39,6 +39,7 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
                 if(!opening_terminal) {
                     generated_code += indent;
                     generated_code += "if(";
+                    opening_terminal = true;
                 } else {
                     generated_code += " if(";
                 }
@@ -65,6 +66,5 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
         }
     }
 
-    generated_code += function_code;
     return generated_code;
 }

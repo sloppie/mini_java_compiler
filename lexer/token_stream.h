@@ -16,6 +16,7 @@ class TokenStream {
         // This TokenStream is to be passsed to the lexer
         void operator<<(Node);
         Node next_token();
+        void reset_position();
 
     private:
         vector<Node> TOKEN_STREAM;
