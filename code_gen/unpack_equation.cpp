@@ -27,7 +27,9 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
     bool first_handled = false;
 
     while(!all_unpacked(packed, eq_size)) {
-        
+        int first_index;
+        int second_index;
+
         for(int i=0; i<eq_size; i++) {
 
             if(packed[i]) {
@@ -83,12 +85,12 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
-                        code_generated += (last_unhandled.get_name().compare("number") == 0)? last_unhandled.get_value(): NEW_VAR_LOOKUP.find(last_unhandled.get_value())[2];
+                        code_generated += (second_last_unhandled.get_name().compare("number") == 0)? second_last_unhandled.get_value() : NEW_VAR_LOOKUP.find(second_last_unhandled.get_value())[2];
                         code_generated += " ";
                         code_generated += postfixed.get_children().at(i).get_name();
                         code_generated += " ";
                         // handles both numbers and also variables already pre-defined in the program
-                        code_generated += (second_last_unhandled.get_name().compare("number") == 0)? second_last_unhandled.get_value() : NEW_VAR_LOOKUP.find(second_last_unhandled.get_value())[2];
+                        code_generated += (last_unhandled.get_name().compare("number") == 0)? last_unhandled.get_value(): NEW_VAR_LOOKUP.find(last_unhandled.get_value())[2];
                         code_generated += "\n";
 
                         first_handled = true;
@@ -188,12 +190,12 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, bool is_conditio
                         code_generated += result_stored;
                         code_generated += " = ";
                         // handles both numbers and also variables already pre-defined in the program
-                        code_generated += (last_unhandled.get_name().compare("number") == 0)? last_unhandled.get_value(): NEW_VAR_LOOKUP.find(last_unhandled.get_value())[2];
+                        code_generated += (second_last_unhandled.get_name().compare("number") == 0)? second_last_unhandled.get_value() : NEW_VAR_LOOKUP.find(second_last_unhandled.get_value())[2];
                         code_generated += " ";
                         code_generated += postfixed.get_children().at(i).get_name();
                         code_generated += " ";
                         // handles both numbers and also variables already pre-defined in the program
-                        code_generated += (second_last_unhandled.get_name().compare("number") == 0)? second_last_unhandled.get_value() : NEW_VAR_LOOKUP.find(second_last_unhandled.get_value())[2];
+                        code_generated += (last_unhandled.get_name().compare("number") == 0)? last_unhandled.get_value(): NEW_VAR_LOOKUP.find(last_unhandled.get_value())[2];
                         code_generated += "\n";
 
                         first_handled = true;
