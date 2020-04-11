@@ -63,7 +63,7 @@ std::vector<Node> line_tests() {
     line_4.add_children(Node(false, "number", "int344"));
     line_4.add_children(Node(true, "*"));
     line_4.add_children(Node(false, "number", "int304"));
-    line_4.add_children(Node(true, ";"));
+    // line_4.add_children(Node(true, ";"));
 
     // adding a new variable to the list
     Node line_5(false, "line");
@@ -79,7 +79,7 @@ std::vector<Node> line_tests() {
     line_5.add_children(Node(false, "number", "int2"));
     line_5.add_children(Node(true, "+"));
     line_5.add_children(Node(false, "number", "int8762"));
-    line_4.add_children(Node(true, ";"));
+    line_5.add_children(Node(true, ";"));
 
     example_lines.push_back(line_1);
     example_lines.push_back(line_2);
