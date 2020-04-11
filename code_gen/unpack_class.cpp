@@ -12,12 +12,12 @@ void ICG::CodeGenerator::unpack_class() {
 
     // The assumption is that the current node is obviously class_declaration
     for(Node child: current_node.get_children()) {
-        
+
         if(!child.is_terminal()) {
 
             if(child.get_name().compare("function_declaration") == 0) {
                 intermediate_code += unpack_function(child);
-            } else {
+            } else if(child.get_name().compare("class_varaible_declaration") == 0) {
                 intermediate_code += unpack_cvd(child);
             }
 

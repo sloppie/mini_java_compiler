@@ -16,6 +16,8 @@ std::string ICG::CodeGenerator::unpack_function(Node function_declaration) {
                 INDENT++;
                 generated_code += unpack_block(child);
                 INDENT--;
+            } else if(child.get_name().compare("property_name") == 0) {
+                generated_code += child.get_value();
             }
 
         }

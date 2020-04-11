@@ -116,7 +116,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                         if(!is_defined) {
                             RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
                             cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
-                            RESPECTIVE_NODE->add_children(Node(false, "proprrty_name", term_stack.get_init_queue().at(1)));
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
                             cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
                             RESPECTIVE_NODE->add_children(Node(true, "="));
                             SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");

@@ -99,8 +99,9 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
         
         if(conditions.compare("&&") != 0 && conditions.compare("||") != 0) {
             Node new_condition(false, "tested_condition");
-            break_down_condition(conditions.c_str(), &new_condition);
-            CONDITION.add_children(new_condition);
+            // break_down_condition(conditions.c_str(), &new_condition);
+            break_down_condition(conditions.c_str(), &CONDITION);
+            // CONDITION.add_children(new_condition);
         } else {
             CONDITION.add_children(Node(true, "connector", conditions));
         }
@@ -157,6 +158,7 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
 
                         if(param[0].compare("undefined") != 0) {
                             condn.add_children(Node(false, "condition_parameter", last_cond));
+                            // CONDITION->add_children(Node(false, "condition_parameter", last_cond));
                             cout<< "\033[1;21mcondition_parameter\033[0m token added: \033[1;21m"<< last_cond<< "\033[0m"<< endl;
                         } else {
                             //warning
@@ -166,6 +168,7 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
 
                             ERROR_STREAM->add_warning(error_message);
                             condn.add_children(Node(false, "condition_parameter", "undefined"));
+                            // CONDITION->add_children(Node(false, "condition_parameter", "undefined"));
                         }
 
                         last_cond_type = "variable";

@@ -9,7 +9,7 @@ public class SampleCode {
         int i = 0;
         int x = 0;
 
-        if(y == x && x == i) {
+        if(y == x) {
             int y = 201 + 1;
         }
 

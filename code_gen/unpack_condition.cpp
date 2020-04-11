@@ -29,7 +29,11 @@ std::string ICG::CodeGenerator::unpack_condition(Node condition) {
 
     }
 
-    generated_code = (connector_found)? unpack_chained_condition(condition): unpack_single_condition(condition);
+    // accounting for the fact that each condition is housed in a tested_condition,
+    //  this calls for passing of the index of the first child if it is in fact a single condition.
+    // hence it is passed as unpack_single_condition(condition.get_children().at(0))
+
+    generated_code = (connector_found)? unpack_chained_condition(condition): unpack_single_condition(condition.get_children().at(1));
 
     // cout<< intermediate_code<< endl;
 
@@ -76,6 +80,7 @@ std::string ICG::CodeGenerator::unpack_single_condition(Node condition, std::str
     std::string generated_code = term_id;
     generated_code += " = ";
 
+    cout<< "Condition size: "<< condition.get_children().size()<< endl;
     for(Node child : condition.get_children()) {// skips every other token except the condition_parameter and the comparator
         
         if(child.get_name().compare("condition_parameter") == 0) {
@@ -123,8 +128,12 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
             condition_queue.enqueue(current_condition);
             post_code_connectors.enqueue(child.get_value());
             current_condition = Queue<Node>();
+        } else if(child.get_name().compare("tested_condition") == 0) {
+            for(Node tested_condition_children: child.get_children()) {
+                current_condition.enqueue(tested_condition_children);
+            }
         } else if(child.get_name().compare("condition_parameter") == 0 || child.get_name().compare("comparator") == 0) {
-            // std::cout<< child.get_value()<< " value"<< std::endl;
+            std::cout<< child.get_value()<< " value"<< std::endl;
             current_condition.enqueue(child);
         } else if(child.get_name().compare(")") == 0){ // This adds the last condition in the condition Node that is not in between connectors
             condition_queue.enqueue(current_condition);
@@ -135,17 +144,19 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
     for(int i=0; i<condition_queue.get_init_queue().size(); i++) {
 
         // recreate a condition for the ICG::CodeGenerator::unpack_single_condition to use
-        Node condition(false, "condition");
+        Node new_condition(false, "condition");
         Queue<Node> in_queue = condition_queue.dequeue(Queue<Node>());
+        std::cout<< "New condition unpacked"<< std::endl;
 
         for(Node cond: in_queue.get_init_queue()) {
-            condition.add_children(cond);
+            cout<< cond.get_name()<< endl;
+            new_condition.add_children(cond);
         }
 
         // handle the condition to get the equivalent three step code
         std::string term_id = get_term_id();
         post_code_variables.enqueue(term_id);
-        generated_code += unpack_single_condition(condition, term_id);
+        generated_code += unpack_single_condition(new_condition, term_id);
 
     }
 

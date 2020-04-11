@@ -66,6 +66,8 @@ namespace ICG {
             // this method is used to co-ordinate all the methods defined ablove to facilitate the
             // unpacking of the class variables (i.e Methods and Variable_declarations).
             void unpack_class();
+            // coordinates the unpacking and packing of all the code into one string
+            void run();
 
         private:
             int TEST_ID = 0;
