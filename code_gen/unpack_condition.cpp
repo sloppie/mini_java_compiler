@@ -43,7 +43,18 @@ std::string ICG::CodeGenerator::unpack_condition(Node condition) {
 
 std::string ICG::CodeGenerator::unpack_single_condition(Node condition) {
     std::string generated_code = "";
+    std::string indent = "";
+
+    for(int i=0; i<INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
+
     std::string term_id = get_term_id();
+    generated_code += indent;
     generated_code += term_id;
     generated_code += " = ";
 
@@ -77,10 +88,19 @@ std::string ICG::CodeGenerator::unpack_single_condition(Node condition) {
 
 
 std::string ICG::CodeGenerator::unpack_single_condition(Node condition, std::string term_id) {
-    std::string generated_code = term_id;
+    std::string indent = "";
+
+    for(int i=0; i<INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
+    std::string generated_code = indent;
+    generated_code += term_id;
     generated_code += " = ";
 
-    cout<< "Condition size: "<< condition.get_children().size()<< endl;
     for(Node child : condition.get_children()) {// skips every other token except the condition_parameter and the comparator
         
         if(child.get_name().compare("condition_parameter") == 0) {
@@ -111,6 +131,16 @@ std::string ICG::CodeGenerator::unpack_single_condition(Node condition, std::str
 
 
 std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
+    std::string indent = "";
+
+    for(int i=0; i<INDENT; i++) {
+
+        for(int x=0; x<4; x++) {
+            indent += ' ';
+        }
+
+    }
+
     std::string generated_code = "";
     Queue<Queue<Node>> condition_queue;
     Queue<Node> current_condition;
@@ -133,7 +163,6 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
                 current_condition.enqueue(tested_condition_children);
             }
         } else if(child.get_name().compare("condition_parameter") == 0 || child.get_name().compare("comparator") == 0) {
-            std::cout<< child.get_value()<< " value"<< std::endl;
             current_condition.enqueue(child);
         } else if(child.get_name().compare(")") == 0){ // This adds the last condition in the condition Node that is not in between connectors
             condition_queue.enqueue(current_condition);
@@ -146,10 +175,8 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
         // recreate a condition for the ICG::CodeGenerator::unpack_single_condition to use
         Node new_condition(false, "condition");
         Queue<Node> in_queue = condition_queue.dequeue(Queue<Node>());
-        std::cout<< "New condition unpacked"<< std::endl;
 
         for(Node cond: in_queue.get_init_queue()) {
-            cout<< cond.get_name()<< endl;
             new_condition.add_children(cond);
         }
 
@@ -165,6 +192,7 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
     for(int i=0; i<post_code_variables.get_init_queue().size(); i++) {
 
         if(i == 0) {
+            generated_code += indent;
             generated_code += last_term;
             generated_code += " = ";
             generated_code += post_code_variables.dequeue("");
@@ -175,6 +203,7 @@ std::string ICG::CodeGenerator::unpack_chained_condition(Node condition) {
             generated_code += "\n";
             i++;
         } else {
+            generated_code += indent;
             generated_code += last_term;
             generated_code += " = ";
             generated_code += last_term;

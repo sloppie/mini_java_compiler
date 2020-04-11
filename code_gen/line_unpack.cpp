@@ -75,7 +75,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
         if(op_found) {
             // create a new node that will hold the equation.
             // This equation will be rarranged to a postfix
-            Node postfixed(false, "line");
+            Node postfixed(false, "line"); 
             
             for(int i=0; i<after_assignment_stack.get_init_queue().size(); i++) {
                 postfixed.add_children(after_assignment_stack.dequeue(Node(true, "something")));
@@ -86,6 +86,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
             generated_code = unpack_equation(postfixed, new_term_id, is_conditional_block);
 
         } else { // operation not found, hence must be a function call or intitialised to the value of another variable
+            generated_code += (is_conditional_block) ? "    ": indent;
             generated_code += new_term_id;
             generated_code += " = ";
             

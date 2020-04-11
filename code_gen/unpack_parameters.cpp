@@ -9,6 +9,8 @@ std::string ICG::CodeGenerator::unpack_parameters(Node parameter_definition) {
         // !TODO: restructure the adding of the last terminal to be handed back to parameter_definition Node
             if(child.get_name().compare(",") == 0) {
                 generated_code += ", ";
+            } else if(child.get_name().compare(")")) {
+                generated_code += ") ";
             } else {
                 generated_code += child.get_name();
             }

@@ -7,7 +7,7 @@ public class SampleCode {
 
     public int main(int args) {
         int i = 0;
-        int x = 0;
+        int x = 0 * 20 + 91;
 
         if(y == x) {
             int y = 201 + 1;

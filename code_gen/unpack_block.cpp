@@ -15,22 +15,26 @@ std::string ICG::CodeGenerator::unpack_block(Node block) {
     for(Node child: block.get_children()) {
 
         if(child.is_terminal()) {
+
             if(child.get_name().compare("{") == 0) {
                 generate_code += "{\n";
             } else {
                 generate_code += closing_indent;
                 generate_code += "}\n";
             }
+
         } else {
+
             if(child.get_name().compare("if_else") == 0) {
                 generate_code += unpack_if(child);
             } else if(child.get_name().compare("while") == 0) {
                 // unpack block goes here
-                // generated_code ++ unpack_while();
+                generate_code += unpack_while(child);
             } else {
                 // create a new anonymous function to house the block code
                 generate_code += unpack_line(child, false);
             }
+
         }
 
     }

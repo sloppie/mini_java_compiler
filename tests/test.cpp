@@ -49,7 +49,6 @@ int main() {
     cout<< endl<< "\033[1;21;33mUnpacking example if_else Node\033[0m"<< endl<< endl;
     // cout<< code_gen.unpack_while(while_tests());
     code_gen.run();
-    Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(while_tests());
 
     return 0;
 }
