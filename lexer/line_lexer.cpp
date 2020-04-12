@@ -105,7 +105,8 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                             cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
                             RESPECTIVE_NODE->add_children(Node(true, "="));
                             cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
-                            unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
+                            // unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
+                            unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
                         }
                     }
 
@@ -388,6 +389,29 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
             }
 
         }
+    } else {
+        std::string v_name = values[0];
+        std::string v_type = SYMBOL_TABLE->find(v_name)[1];
+        
+        if(is_function_call(values[0])) {
+            // handle function_call
+        } else {
+            
+            if(NUMBER_TYPE.compare(v_type) == 0) {
+                RESPECTIVE_NODE->add_children(Node(false, "property_defined", v_name));
+                cout<< "\033[1;21m"<< v_name<< "\033[0m token(propety_name) added"<< endl;
+            } else {
+                error_message = "Invalid token \033[1;21m";
+                error_message += values[0];
+                error_message += "\033[0m . Expected token of type \033[1;21m";
+                error_message += NUMBER_TYPE;
+                error_message += "\033[0m";
+
+                (*ERROR_STREAM)<< error_message;
+            }
+
+        }
+
     }
 
     for(int i=1; i<QUEUE_SIZE; i++) {
