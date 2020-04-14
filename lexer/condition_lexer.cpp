@@ -223,6 +223,11 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
                     CURSOR++;
                 } else {
 
+                    std::string next_word = "";
+                    next_word += condition[CURSOR + 1];
+                    std::string compar = "";
+                    compar += condition[CURSOR]; 
+
                     if(condition[CURSOR + 1] != ' ') {
                         string comparator_token = "";
                         comparator_token += condition[CURSOR];
@@ -234,6 +239,8 @@ vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITIO
 
                         (*ERROR_STREAM)<< error_message;
                         CURSOR++;
+                    } else {
+                        condn.add_children(Node(true, "comparator", compar));
                     }
 
                 }
