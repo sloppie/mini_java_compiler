@@ -18,6 +18,10 @@ Node TokenStream::next_token() {
     
 }
 
+int TokenStream::size() {
+    return TOKEN_STREAM.size();
+}
+
 void TokenStream::reset_position() {
     POSITION = 0;
 }

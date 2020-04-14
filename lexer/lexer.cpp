@@ -19,16 +19,12 @@ void Lexer::scan_code() {
             CURSOR++;
         }
 
-        std::cout<< "Broke out of the first loop"<< std::endl;
-
         std::string term_found = "";
         
         while(source_code[CURSOR] != ' ' && source_code[CURSOR] != '\t' && source_code[CURSOR] != '\n') {
             term_found += source_code[CURSOR];
             CURSOR++;
         }
-
-        std::cout<< "term_found: "<< term_found<< std::endl;
 
         if(term_found.compare("import") == 0) {
             CURSOR = BRANCH;

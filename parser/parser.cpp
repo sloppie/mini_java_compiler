@@ -3,6 +3,10 @@
 
 void Parser::engine() {
     
+    for(int i=0; i<TOKEN_STREAM->size(); i++) {
+        visit_tree(TOKEN_STREAM->next_token());
+    }
+
 }
 
 

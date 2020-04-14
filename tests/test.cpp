@@ -46,9 +46,8 @@ int main() {
     } else {
         ERROR_STREAM->print_errors();
         cout<< endl<< "\033[1;21;33mRespective ParseTree\033[0m"<< endl<< endl;
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
-        Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+        // runs the engine to unpack all the verified tokens
+        Parser(TOKEN_STREAM, SYMBOL_TABLE).engine();
         cout<< endl<< "\033[1;21;33mIntermediate Code\033[0m"<< endl<< endl;
 
         ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
