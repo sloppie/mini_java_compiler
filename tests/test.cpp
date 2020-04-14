@@ -35,26 +35,26 @@ int main() {
     PackageTable* PACKAGE_TABLE = new PackageTable();
     TokenStream* TOKEN_STREAM = new TokenStream();
 
-    cout<< endl<< "\033[1;21;33mLexer Process\033[0m"<< endl<< endl;
+    cout<< "\033[1;21;33mLexer Process\033[0m"<< endl<< endl;
     lexer_tests(PACKAGE_TABLE, FUNCTION_TABLE, SYMBOL_TABLE, TOKEN_STREAM, ERROR_STREAM);
 
     if(ERROR_STREAM->has_messages("ERRORS")) {
         ERROR_STREAM->print_errors();
+
+        std::cout<< "\033[1;21;31mStopping\033[0m compilation process..."<< std::endl;
+        std::cout<< "Please handle errors to continue to other processes"<< std::endl;
     } else {
         ERROR_STREAM->print_errors();
         cout<< endl<< "\033[1;21;33mRespective ParseTree\033[0m"<< endl<< endl;
         Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
         Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
         Parser(TOKEN_STREAM, SYMBOL_TABLE).visit_tree(TOKEN_STREAM->next_token());
+        cout<< endl<< "\033[1;21;33mIntermediate Code\033[0m"<< endl<< endl;
+
+        ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
+        code_gen.run();
     }
 
-    cout<< endl<< "\033[1;21;33mIntermediate Code\033[0m"<< endl<< endl;
-
-    ICG::CodeGenerator code_gen(SYMBOL_TABLE, TOKEN_STREAM);
-    cout<< endl<< "\033[1;21;33mUnpacking example if_else Node\033[0m"<< endl<< endl;
-    // cout<< code_gen.unpack_while(while_tests());
-    code_gen.run();
-    // cout<< unpack_equation(ICG::postfix_it(line_tests().at(3)), false);
 
     return 0;
 }
