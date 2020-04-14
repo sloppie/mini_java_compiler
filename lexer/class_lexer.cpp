@@ -4,8 +4,6 @@
 
 
 void Lexer::unpack_class(string code) {
-    cout<< "Unpacking class..."<< endl;
-
     Node class_declaration(false, "class_declaration");
     string access_modifier = "";
     string class_name = "";

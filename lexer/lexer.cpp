@@ -6,7 +6,40 @@
 
 void Lexer::scan_code() {
     unpack_package(source_code, "package");
-    unpack_package(source_code, "import");
+    
+    // this while-loop helps for the accounting for the closure of imports
+    // if the term found is not an import key word,
+    // it resets the CURSOR the branch that was made, and then breaks the gameloop
+    // else it resets the CURSOR to the BRANCH made and then breaks out of the gameloop
+    while(true) { // gameloop
+        int BRANCH = CURSOR;
+
+        // skip all the new lines
+        while(source_code[CURSOR] == ' ' || source_code[CURSOR] == '\n') {
+            CURSOR++;
+        }
+
+        std::cout<< "Broke out of the first loop"<< std::endl;
+
+        std::string term_found = "";
+        
+        while(source_code[CURSOR] != ' ' && source_code[CURSOR] != '\t' && source_code[CURSOR] != '\n') {
+            term_found += source_code[CURSOR];
+            CURSOR++;
+        }
+
+        std::cout<< "term_found: "<< term_found<< std::endl;
+
+        if(term_found.compare("import") == 0) {
+            CURSOR = BRANCH;
+            unpack_package(source_code, "import");
+        } else {
+            CURSOR = BRANCH;
+            break;
+        }
+
+    }
+
     unpack_class(source_code);
 }
 

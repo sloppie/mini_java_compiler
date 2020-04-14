@@ -1,6 +1,8 @@
 package com.joocy;
 
 import com.joocy.utilities.MyClass;
+import java.util.FileWriter;
+import java.util.FileReader;
 
 public class Legendary {
 
@@ -25,6 +27,14 @@ public class Legendary {
 
     public int main() {
         findAverage();
+
+        int new = 0;
+        int next;
+
+        if(new == next) {
+            next = new + 1;
+        }
+
     }
 
 }
