@@ -17,7 +17,7 @@ void ICG::CodeGenerator::unpack_class() {
 
             if(child.get_name().compare("function_declaration") == 0) {
                 intermediate_code += unpack_function(child);
-            } else if(child.get_name().compare("class_varaible_declaration") == 0) {
+            } else if(child.get_name().compare("class_variable_declaration") == 0) {
                 intermediate_code += unpack_cvd(child);
             }
 
