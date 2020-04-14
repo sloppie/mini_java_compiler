@@ -14,7 +14,7 @@ public class Legendary {
         int ssre = 64;
         int i = 0;
 
-        while(i < subjectSize) {
+        while(i <= subjectSize) {
             int term = mathematics + english + kiswahili + science + ssre;
             term = term / subjectSize;
 

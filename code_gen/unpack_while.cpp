@@ -39,6 +39,7 @@ std::string ICG::CodeGenerator::unpack_while(Node while_body) {
             } else {
                 INDENT++;
                 generated_code += unpack_conditional_block(child);
+                INDENT--;
             }
 
         }

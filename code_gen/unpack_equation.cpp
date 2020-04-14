@@ -162,11 +162,11 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
                     generated_code += (is_conditional_block)? "    ": indent;
                     generated_code += term_id;
                     generated_code += " = ";
-                    generated_code += (second_last.get_name().compare("property_defined") == 0)? NEW_VAR_LOOKUP.find(second_last.get_value())[2]: second_last.get_value();
+                    generated_code += (second_last.get_name().compare("property_name") == 0)? NEW_VAR_LOOKUP.find(second_last.get_value())[2]: second_last.get_value();
                     generated_code += " ";
                     generated_code += equation.at(i).get_name();
                     generated_code += " ";
-                    generated_code += (last.get_name().compare("property_defined") == 0)? NEW_VAR_LOOKUP.find(last.get_value())[2]: last.get_value();
+                    generated_code += (last.get_name().compare("property_name") == 0)? NEW_VAR_LOOKUP.find(last.get_value())[2]: last.get_value();
                     generated_code += "\n";
 
                     // we have to create a new vector now that has sliced of the worked out values
@@ -194,11 +194,11 @@ std::string ICG::CodeGenerator::unpack_equation(Node postfixed, std::string assi
                     generated_code += (is_conditional_block)? "    ": indent;
                     generated_code += new_term_id;
                     generated_code += " = ";
-                    generated_code += (second_last.get_name().compare("property_defined") == 0)? NEW_VAR_LOOKUP.find(second_last.get_value())[2]: second_last.get_value();
+                    generated_code += (second_last.get_name().compare("property_name") == 0)? NEW_VAR_LOOKUP.find(second_last.get_value())[2]: second_last.get_value();
                     generated_code += " ";
                     generated_code += equation.at(i).get_name();
                     generated_code += " ";
-                    generated_code += (last.get_name().compare("property_defined") == 0)? NEW_VAR_LOOKUP.find(last.get_value())[2]: last.get_value();
+                    generated_code += (last.get_name().compare("property_name") == 0)? NEW_VAR_LOOKUP.find(last.get_value())[2]: last.get_value();
                     generated_code += "\n";
 
                     // we have to create a new vector now that has sliced of the worked out values

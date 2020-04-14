@@ -179,14 +179,20 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
                         
                         if(node.is_terminal()) { // allow the skipping of the semi-colon which is no longer usable
 
-                            if(node.get_name().compare(";") != 0) {
+                            if(node.get_name().compare(",") == 0) {
                                 generated_code += node.get_name();
                                 generated_code += " ";
-                            } 
+                            } else {
+
+                                if(node.get_name().compare("(") == 0 || node.get_name().compare(")") == 0) {
+                                    generated_code += node.get_name();
+                                }
+
+                            }
                             
                         } else {
 
-                            if(node.get_name().compare("function_call") == 0) {
+                            if(node.get_name().compare("property_name") == 0) {
                                 generated_code += node.get_value();
                             } else if(node.get_name().compare("arguments") == 0) {
                                 // this part assumes that onlu variables are passes onto the function call
@@ -197,6 +203,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
 
                     }
 
+                    generated_code += "\n";
                 }
 
             }

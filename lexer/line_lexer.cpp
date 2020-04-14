@@ -398,7 +398,7 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
         } else {
             
             if(NUMBER_TYPE.compare(v_type) == 0) {
-                RESPECTIVE_NODE->add_children(Node(false, "property_defined", v_name));
+                RESPECTIVE_NODE->add_children(Node(false, "property_name", v_name));
                 cout<< "\033[1;21m"<< v_name<< "\033[0m token(propety_name) added"<< endl;
             } else {
                 error_message = "Invalid token \033[1;21m";
@@ -715,6 +715,7 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
     bool fn_found = false;
     vector<string> function_args;
     string error_message;
+    Node func_call(false, "function_call");
 
     int CURSOR = 0;
 
@@ -729,6 +730,7 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
         } else {
 
             if(fc[CURSOR] == '(') {
+                // func_call.add_children(Node(true, "("));
                 fn_found = true;
                 CURSOR++;
                 continue;
@@ -764,9 +766,12 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
 
     // fetch function info
     string* function_details = FUNCTION_TABLE->find(function_name);
+    string default_return[3] = {"No param", "No param", "No param"};
 
+    Node fn_call(false, "function_call");
+    fn_call.add_children(Node(false, "property_name", FUNCTION_TABLE->get_function_id(function_name)));
+    fn_call.add_children(Node(true, "("));
     if(function_details[0].compare("undefined") != 0) {
-        Node fn_call(false, "function_call", FUNCTION_TABLE->get_function_id(function_name));
         params_queue function_params = FUNCTION_TABLE->find_param_details(function_name);
         
         if(function_params.size() == function_args.size()) {
@@ -774,7 +779,6 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
             for(int i=0; i<function_params.size(); i++) {
                 string arg_type;
                 arg_type = SYMBOL_TABLE->find(function_args.at(i))[1];
-                string default_return[3] = {"No param", "No param", "No param"};
 
                 if(function_params.dequeue(default_return)[1].compare(arg_type) == 0) {
                     // ritght argument code :)
@@ -794,21 +798,27 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
             }
 
         } else {
-            error_message = "Expected: ";
-            error_message += function_params.size();
-            error_message += " arguments but instead got: ";
-            error_message += function_args.size();
-            error_message += "\n\t\t\033[1;0m";
-            error_message += FUNCTION_TABLE->create_function_template(function_name);
-            error_message += "\033[0m";
 
-            (*ERROR_STREAM)<< error_message;
-            // cout<< "ERROR:"<< endl;
-            // cout<< "    Expected "<< function_params.size()<< " arguments. Instead gt: "<< function_args.size()<< endl;
-            // // insert template example here
-            // cout<< "    Function Template: "<< FUNCTION_TABLE->create_function_template(function_name)<< endl;
+            if(function_params.dequeue(default_return)[0] == "undefined") {
+                // skip block for this one exception
+            } else {
+                error_message = "Expected: ";
+                error_message += function_params.size();
+                error_message += " arguments but instead got: ";
+                error_message += function_args.size();
+                error_message += "\n\t\t\033[1;0m";
+                error_message += FUNCTION_TABLE->create_function_template(function_name);
+                error_message += "\033[0m";
+
+                (*ERROR_STREAM)<< error_message;
+                // cout<< "ERROR:"<< endl;
+                // cout<< "    Expected "<< function_params.size()<< " arguments. Instead gt: "<< function_args.size()<< endl;
+                // // insert template example here
+                // cout<< "    Function Template: "<< FUNCTION_TABLE->create_function_template(function_name)<< endl;
+            }
         }
 
+        fn_call.add_children(Node(true, ")"));
         RESPECTIVE_NODE->add_children(fn_call);
 
     } else {

@@ -102,8 +102,10 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
 
             if(pb[CURSOR] == ',') {
                 parameter_definitiion.add_children(Node(true, ","));                
+                cout<< "\033[1;21m,\033[0m token added"<< endl;
             } else if(pb[CURSOR] == ')') {
                 parameter_definitiion.add_children(Node(true, ")"));
+                cout<< "\033[1;21m(\033[0m token added"<< endl;
             }
 
             new_param.enqueue(param_added);
@@ -121,6 +123,8 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
     if(params_found) {
         CORRESSPONDING_PARAMS.push_back(new_param);
     } else {
+        parameter_definitiion.add_children(Node(true, ")"));
+        cout<< "\033[1;21m(\033[0m token added"<< endl;
         CORRESSPONDING_PARAMS.push_back(undefined_param);
     }
 
