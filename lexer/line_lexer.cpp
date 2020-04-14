@@ -600,31 +600,76 @@ void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Nod
 
                 }else if(NUMBER_TYPE.compare("int") == 0) {
 
-                    if(!cfg.is_int(current.c_str())) {
-                        error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
-                        error_message += current;
-                        error_message += "\033[0m Expected \033[1;21mint\033[0m";
+                    if(cfg.is_word(current.c_str())) {
+                        
+                        if(SYMBOL_TABLE->find(current)[1].compare(NUMBER_TYPE) == 0) {
+                            // pass
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", current));
+                            cout<< "\033[1;21m"<< current<< "\033[0m token(propety_name) added"<< endl;
+                        } else {
+                            error_message = "\033[1;0mType Conflic\033[0m. Expected: ";
+                            error_message += NUMBER_TYPE;
+                            error_message += "\033[1;0m, got: \033[1;0m" ;
+                            error_message += SYMBOL_TABLE->find(current)[1];
+                            error_message += "\033[0m";
 
-                        (*ERROR_STREAM)<< error_message;
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(current)[1]<< endl;
+                        }
+
+
                     } else {
-                        RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
-                        cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
+
+                        if(!cfg.is_int(current.c_str())) {
+                            error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
+                            error_message += current;
+                            error_message += "\033[0m Expected \033[1;21mint\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                        } else {
+                            RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                            cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
+                        }
+                        
                     }
+
 
                 } else if(NUMBER_TYPE.compare("float") == 0 || NUMBER_TYPE.compare("double") == 0) {
 
-                    if(!cfg.is_decimal(current.c_str())) {
-                        error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
-                        error_message += current;
-                        error_message += "\033[0m Expected \033[1;21m";
-                        error_message += NUMBER_TYPE;
-                        error_message +="\033[0m";
+                    if(cfg.is_word(current.c_str())) {
 
-                        (*ERROR_STREAM)<< error_message;
+                        if(SYMBOL_TABLE->find(current)[1].compare(NUMBER_TYPE) == 0) {
+                            // pass
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", current));
+                            cout<< "\033[1;21m"<< current<< "\033[0m token(propety_name) added"<< endl;
+                        } else {
+                            error_message = "\033[1;0mType Conflic\033[0m. Expected: ";
+                            error_message += NUMBER_TYPE;
+                            error_message += "\033[1;0m, got: \033[1;0m" ;
+                            error_message += SYMBOL_TABLE->find(current)[1];
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                            // cout<< "CONFLICTING TYPES!\n    EXPECTED TYPE: "<< NUMBER_TYPE<< ", GOT: "<< SYMBOL_TABLE->find(current)[1]<< endl;
+                        }
+
                     } else {
-                        RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
-                        cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
+                        
+                        if(!cfg.is_decimal(current.c_str())) {
+                            error_message = "\033[1;21mInvalid type\033[0m found in token \033[1;21m";
+                            error_message += current;
+                            error_message += "\033[0m Expected \033[1;21m";
+                            error_message += NUMBER_TYPE;
+                            error_message +="\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                        } else {
+                            RESPECTIVE_NODE->add_children(Node(false, "number", new_number));
+                            cout<< "\033[1;21m"<< new_number<< "\033[0m token(number) added"<< endl;
+                        }
+ 
                     }
+
 
                 } else {
                     error_message = "Invalid token \033[1;21m";
