@@ -14,7 +14,7 @@ using namespace std;
 using namespace fs;
 
 int lexer_tests(PackageTable* PACKAGE_TABLE, FunctionTable* FUNCTION_TABLE, SymbolTable* SYMBOL_TABLE, TokenStream* TOKEN_STREAM, ErrorStream* ERROR_STREAM) {
-    string file_name = "/root/gitau/compiler_construction/sample_code/SampleCode.java";
+    string file_name = "/root/gitau/compiler_construction/sample_code/FindAverage.java";
     string data = read_file(file_name);
     Lexer lexical_analyser(data, SYMBOL_TABLE, PACKAGE_TABLE, FUNCTION_TABLE, TOKEN_STREAM, ERROR_STREAM);
     lexical_analyser.scan_code();

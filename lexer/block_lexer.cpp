@@ -42,7 +42,7 @@ void Lexer::unpack_block(string sample_code, Node* RESPECTIVE_NODE) {
                         unpack_if(BLOCK_CURSOR, sample_code, RESPECTIVE_NODE);
                     } else {
                         BLOCK_CURSOR -= 4;
-                        unpack_while(sample_code, RESPECTIVE_NODE);
+                        unpack_while(BLOCK_CURSOR, sample_code, RESPECTIVE_NODE);
                     } 
 
 
