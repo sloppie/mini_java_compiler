@@ -44,7 +44,7 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
                     generated_code += " if(";
                 }
             } else if(child.get_name().compare("else") == 0) {
-                generated_code += " else";
+                generated_code += " else ";
             } else {
                 generated_code += child.get_name();
             }
@@ -65,6 +65,8 @@ std::string ICG::CodeGenerator::unpack_if(Node if_else) {
 
         }
     }
+
+    generated_code += "\n";
 
     return generated_code;
 }

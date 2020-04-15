@@ -14,6 +14,8 @@ public class SampleCode {
 
         if(y == x) {
             int y = 201 + 1;
+        } else {
+            double t = 43.04 + 21.43;
         }
 
 

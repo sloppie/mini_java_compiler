@@ -114,7 +114,7 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
         if(term.compare("if") == 0) {
             // handle adde=ing to Node tree
             if_else.add_children(Node(true, "if"));
-            cout<< "\033[1;21mif\033[0m] token added"<< endl;
+            cout<< "\033[1;21mif\033[0m token added"<< endl;
             opening_term = true;
             break;
         }
@@ -156,7 +156,7 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
             bool else_found = false;
             
             while(if_code[CURSOR] != '\0' && if_code[CURSOR] != ' ') {
-                term = if_code[CURSOR];
+                term += if_code[CURSOR];
                 CURSOR++;
             }
 
@@ -170,19 +170,28 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
 
                 RESET_CURSOR = CURSOR;
 
-                while(if_code[CURSOR] != ' ' && if_code[CURSOR] != ')') {
+                while(if_code[CURSOR] != ' ' && if_code[CURSOR] != '(') {
                     second_term += if_code[CURSOR];
+                    CURSOR++;
                 }
 
                 if(second_term.compare("if") == 0) {
+                    if_else.add_children(Node(true, "else"));
                     CURSOR = RESET_CURSOR;
                     unpack_if(code, CURSOR, &if_else);
+                    // this branch will be used ince the while recurses and does not find another if or else
+                    RESET_CURSOR = CURSOR;
+                    term = ""; // have to reset the term string to enable recursing again
                 } else {
+                    CURSOR = RESET_CURSOR;
                     string else_block = Lexer::find_bracketed_code(code, '{', CURSOR);
+                    std::cout<< else_block<< std::endl;
                     if_else.add_children(Node(true, "else"));
                     Node else_block_node(false, "block_code");
                     unpack_block(else_block, &else_block_node);
                     if_else.add_children(else_block_node);
+                    // this branch will be used ince the while recurses and does not find another if or else
+                    RESET_CURSOR = CURSOR; 
                 }
 
             } else {
@@ -200,20 +209,16 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
 
 
 void Lexer::unpack_if(string code, int& CURSOR, Node* RESPECTIVE_NODE) {
-    // Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
     string term = "";
-
-    // !TODO create Node data structure to hold the data for the parse tree
 
     while(if_code[CURSOR] != '\0') {
         term += if_code[CURSOR];
 
         if(term.compare("if") == 0) {
-            // handle token add
             RESPECTIVE_NODE->add_children(Node(true, "if")); // token 1
-            cout<< "\033[1;21mif\033[0m] token added"<< endl;
+            cout<< "\033[1;21mif\033[0m token added"<< endl;
             opening_term = true;
             break;
         }

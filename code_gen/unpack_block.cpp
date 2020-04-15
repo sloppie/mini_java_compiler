@@ -62,6 +62,7 @@ std::string ICG::CodeGenerator::unpack_conditional_block(Node block) {
     for(Node child: block.get_children()) {
 
         if(child.is_terminal()) {
+
             if(child.get_name().compare("{") == 0) {
                 generate_code += "{\n";
             }
@@ -72,7 +73,7 @@ std::string ICG::CodeGenerator::unpack_conditional_block(Node block) {
                 generate_code += unpack_if(child);
             } else if(child.get_name().compare("while") == 0) {
                 // unpack block goes here
-                // generated_code ++ unpack_while();
+                generate_code += unpack_while(child);
             } else {
                 // create a new anonymous function to house the block code                
                 function_code += unpack_line(child, true);
@@ -89,7 +90,7 @@ std::string ICG::CodeGenerator::unpack_conditional_block(Node block) {
     generate_code += func_name;
     generate_code += "\n";
     generate_code += closing_indent;
-    generate_code += "}\n";
+    generate_code += "}";
 
     return generate_code;
 }

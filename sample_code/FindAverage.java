@@ -33,6 +33,10 @@ public class Legendary {
 
         if(new == next) {
             next = new + 1;
+        } else if(new >= next) {
+            double v = 76.8 + 90.21;
+        } else {
+            float variable = 34.567;
         }
 
     }

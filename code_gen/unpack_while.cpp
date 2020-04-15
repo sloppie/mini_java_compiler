@@ -46,5 +46,7 @@ std::string ICG::CodeGenerator::unpack_while(Node while_body) {
 
     }
 
+    generated_code += "\n";
+
     return generated_code;
 }
