@@ -43,6 +43,9 @@ public class Legendary {
             float variable = 34.567;
         }
 
+        String complete = "Average computing done";
+        System.out.println(complete);
+
     }
 
 }

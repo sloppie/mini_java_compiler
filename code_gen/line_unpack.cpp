@@ -145,8 +145,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
                     generated_code += bool_id;
                     generated_code += " = ";
                     generated_code += result_id;
-                }
-                else
+                } else
                     generated_code += NEW_VAR_LOOKUP.find(assigned.get_value())[2];
                 
                 generated_code += "\n";
@@ -185,7 +184,7 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
                     term_id
                 );
 
-            } else { // is a function call or just a variable name written in a line
+            } else { // is a function call or just a variable name written out for noo reason in a line
 
                 // handles the case of it being a function call.
                 // The logicc of only handling the function call is that,

@@ -16,32 +16,38 @@ FunctionTable::FunctionTable(ErrorStream* ERROR_STREAM): ERROR_STREAM(ERROR_STRE
     up[1] = "undefined";
     up[2] = "undefined";
     undefined_param.enqueue(up);
+
+    // add system functions such as:
+    // 1. System.println
+
+    // this dummy Node is used instead of creating an overload just for adding system functions
+    Node dummy_node(false, "dummy_node"); 
+    add_member("System.out.println", "void", "global", "(String value)", &dummy_node);
 }
 
 void FunctionTable::add_member(string value, string return_type, string context, string parameter_block, Node* function_declaration) {
     string* new_member = new string[3];
-    new_member[0] = value;
-    new_member[1] = return_type;
-    new_member[2] = context;
+    new_member[0] = value; // function name
+    new_member[1] = return_type; // function return type
+    new_member[2] = context; // function access_modifier
 
-    cout<< "Function added: "<< endl;
-    cout<< "    Name: "<< value<< endl;
-    cout<< "    Return Type: "<< return_type<< endl;
-    cout<< "    Context: "<< context<< endl;
-    FUNCTION_TABLE.push_back(new_member);
-    add_param_details(parameter_block, function_declaration);
+    FUNCTION_TABLE.push_back(new_member); // adds to the end of the FUNCTION_TABLE vector
+    add_param_details(parameter_block, function_declaration); // The corresponding index has the params_queue added to it
 }
 
 void FunctionTable::add_param_details(string parameter_block, Node* function_declaration) {
-    cout<< "Parsing param block: "<< parameter_block<< endl;
     const char* pb = parameter_block.c_str();
-    function_declaration->add_children(Node(true, "(")); // add terrminal '(' to the tree
+    // add terrminal '(' to the tree since the index is not passed through in the method again
+    function_declaration->add_children(Node(true, "(")); 
+    // houses all the parameters and the closing bracket index
     Node parameter_definitiion(false, "parameter_definition");
     int CURSOR = 1;
     bool params_found = true;
+    // param queue to be added to the CORRESPONDING_PARAMS vector
     params_queue new_param;
     string function_name = FUNCTION_TABLE.at(FUNCTION_TABLE.size() - 1)[0];
 
+    // skip over any whitespace that may there.
     while(pb[CURSOR] == ' ') {
         CURSOR++;
     }
@@ -56,6 +62,7 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
             CURSOR++;
         }
 
+        // used to trak the impending function_parameter being made
         while(pb[CURSOR] != ',' && pb[CURSOR] != ')') {
 
             if(pb[CURSOR] == ' ') {
@@ -88,6 +95,7 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
             CURSOR++;
         }
 
+        // adds parameter details if they are found
         if(type_found && (parameter_name.compare("") != 0)) {
             string* param_added = new string[3];
             param_added[0] = parameter_name;
@@ -109,10 +117,10 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
             }
 
             new_param.enqueue(param_added);
-        } else if(type_found){
+        } else if(type_found){ // if the type was found, it means that the function argument was not given a name
             params_found = false;
             cout<< "Invalid Paramter definition for function: \""<< function_name<< "\""<< "\n    EXPECTED a name after type: \""<< parameter_type<< "\""<< endl;
-        } else {
+        } else { // handles no definition
             params_found = false;
             // cout<< "Invalid Paramter definition for function: \""<< function_name<< "\""<< "\n    EXPECTED a name after type: \""<< parameter_type<< "\""<< endl;
         }
@@ -120,14 +128,15 @@ void FunctionTable::add_param_details(string parameter_block, Node* function_dec
         CURSOR++;
     }
 
-    if(params_found) {
+    if(params_found) { // if the function had parameter s block
         CORRESSPONDING_PARAMS.push_back(new_param);
-    } else {
+    } else { // this bloc is only accessed if the function had not parameters
         parameter_definitiion.add_children(Node(true, ")"));
         cout<< "\033[1;21m(\033[0m token added"<< endl;
         CORRESSPONDING_PARAMS.push_back(undefined_param);
     }
 
+    // add the cchildren to the function_declaration node
     function_declaration->add_children(parameter_definitiion);
 }
 
@@ -228,10 +237,7 @@ Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         error_message += access_modifier;
         error_message += "\033[0m";
         (*ERROR_STREAM)<< error_message;
-        // cout<< "INVALID access modifier \""<< access_modifier<< "\""<< endl;
     }
-
-    // cout<< access_modifier<< endl;
 
     while(sc[CURSOR] == ' ') {
         CURSOR++;
@@ -277,12 +283,13 @@ Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         add_member(function_name, return_type, access_modifier, parameter_code, &function_declaration);
     } else {
         if(!am_found) {
-            // cout<< "invalid access modifier for the function: \""<< function_name<< endl;
+            error_message = "Invalid access modifier \033[1;21;31";
+            error_message += access_modifier;
+            error_message += "\033[0m"
         } else {
-            error_message = "Invalid return type or function name in function: \033[1;0m";
+            error_message = "Invalid return type or function name in function: \033[1;21m";
             error_message += function_name;
             error_message += "\033[0m";
-            // cout<< "Invalid return type or function name in function: \""<< function_name<< "\""<< endl;
         }
     }
 
