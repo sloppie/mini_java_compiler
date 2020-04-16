@@ -97,6 +97,9 @@ bool Lexer::is_function_call(string current) {
     while(function_call[CURSOR_TRACK] != '\0') {
 
         if(!opening_bracket) {
+            if(function_call[CURSOR_TRACK] == '=')
+                break;
+
             opening_bracket = function_call[CURSOR_TRACK] == '(';
 
             if(!opening_bracket)

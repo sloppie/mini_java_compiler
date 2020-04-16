@@ -125,6 +125,27 @@ std::string ICG::CodeGenerator::unpack_line(Node line, bool is_conditional_block
 
                 if(assigned.get_name().compare("number") == 0)
                     generated_code += assigned.get_value();
+                else if(assigned.get_name().compare("string_definition") == 0) {
+                    generated_code += '"';
+                    generated_code += assigned.get_value();
+                    generated_code += '"';
+                } else if(assigned.get_name().compare("boolean") == 0)
+                    generated_code += assigned.get_value();
+                else if(assigned.get_name().compare("condition") == 0) { // this tries to accoutn for booleans being initialised to conditions
+                    std::string bool_id = "term_";
+                    bool_id += to_string(TEST_ID - 1); // gets the boolean variable id since it has already been intialised
+                    // initialise the boolean variable to an inital variable
+                    generated_code += " = ";
+                    generated_code += "false\n";
+                    // unpack the condition node
+                    generated_code += unpack_condition(assigned);
+                    std::string result_id = "term_"; result_id += to_string(TEST_ID - 1); // gets the result of the id of the condition 
+                    // initialise the boolean to the result of the condition
+                    generated_code += (is_conditional_block)? "    ": indent;
+                    generated_code += bool_id;
+                    generated_code += " = ";
+                    generated_code += result_id;
+                }
                 else
                     generated_code += NEW_VAR_LOOKUP.find(assigned.get_value())[2];
                 

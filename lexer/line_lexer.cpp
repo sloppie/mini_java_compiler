@@ -4,7 +4,7 @@
 
 
 void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
-    // cout<< "Unpacking line..."<< endl;
+    // creates all the error messages found in the line
     string error_message;
     int LINE_CURSOR = 0;
     const char* line = source_code.c_str();
@@ -113,7 +113,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                 } else {
                     string type = term_stack.get_init_queue().at(0);
 
-                    if(is_init_assignment) { // add tokents
+                    if(is_init_assignment) { // add tokens
                         if(!is_defined) {
                             RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
                             cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
@@ -132,7 +132,8 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     
                     if(second_stack_size == 1) {
                         string assigned = second_part.get_init_queue().at(0);
-                        cout<< "Assigneed"<< assigned<< endl;
+                        if(type.compare("String") == 0) 
+                            std::cout<< "This is the String: "<< assigned<< std::endl;
 
                         if(is_function_call(assigned)) {
                             int i = 0;
@@ -173,19 +174,28 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                                 RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
                                 cout<< "\033[1;21m"<< var_details[0]<< "\033[0m token added"<< endl;
                             } else {
-                                error_message = "\033[1;0mConflicting types error\033[0m: the variable";
-                                error_message += assigned;
-                                error_message += " is of type: ";
-                                error_message += var_details[0];
-                                error_message += " expected: \033[1;21";
-                                error_message += type;
-                                error_message += "\033[0m";
+                                if(type.compare("boolean") == 0) {
+                                    std::cout<< "Unpacking boolean"<< std::endl;
 
-                                (*ERROR_STREAM)<< error_message;
+                                    if(assigned.compare("false") == 0 || assigned.compare("true") == 0) {
+                                        RESPECTIVE_NODE->add_children(Node(false, "boolean", assigned));
+                                    }
+
+                                } else {
+                                    error_message = "\033[1;0mConflicting types error\033[0m: the variable";
+                                    error_message += assigned;
+                                    error_message += " is of type: ";
+                                    error_message += var_details[0];
+                                    error_message += " expected: \033[1;21";
+                                    error_message += type;
+                                    error_message += "\033[0m";
+
+                                    (*ERROR_STREAM)<< error_message;
+                                }
                                 // cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
                             }
 
-                        } else {
+                        } else { // being initialised to a terminal value
                             if(type.compare("float") == 0 || type.compare("double") == 0) {
                                 if(CFG().is_decimal(assigned.c_str())) {
                                     string new_float = type;
@@ -218,8 +228,76 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                                     // cout<< "Invalid type"<< endl;
                                 }
 
+                            } else if(type.compare("String") == 0) {
+                                std::cout<< "Unpacking String: "<< assigned<< std::endl;
+                                std::string string_definition = "";
+                                int STRING_CURSOR = 0;
+                                const char* assigned_str = assigned.c_str();
+                                bool opening_quote = false;
+
+                                while(assigned_str[STRING_CURSOR] != '\0') {
+                                    
+                                    if(assigned_str[STRING_CURSOR] == '"') {
+                                    
+                                        if(!opening_quote)
+                                            opening_quote = true;
+                                        else
+                                            break;
+                                        
+                                    } else {
+                                        string_definition += assigned_str[STRING_CURSOR];
+                                    }
+
+                                    STRING_CURSOR++;
+                                }
+
+                                RESPECTIVE_NODE->add_children(Node(false, "string_definition", string_definition));
+
                             }
                         }
+                    } else {
+                        std::string anonymous_string = "";
+
+                        for(int i=0; i<second_stack_size; i++) {
+                            anonymous_string += second_part.get_init_queue().at(i);
+                            
+                            if(i != (second_stack_size - 1))
+                                anonymous_string += ' ';
+                        }
+
+                        if(type.compare("String") == 0) {
+
+                            std::string string_definition = "";
+                            int STRING_CURSOR = 0;
+                            const char* assigned_str = anonymous_string.c_str();
+                            bool opening_quote = false;
+
+                            while(assigned_str[STRING_CURSOR] != '\0') {
+                                
+                                if(assigned_str[STRING_CURSOR] == '"') {
+                                
+                                    if(!opening_quote)
+                                        opening_quote = true;
+                                    else
+                                        break;
+                                    
+                                } else {
+                                    string_definition += assigned_str[STRING_CURSOR];
+                                }
+
+                                STRING_CURSOR++;
+                            }
+
+                            RESPECTIVE_NODE->add_children(Node(false, "string_definition", string_definition));
+
+                        } else if(type.compare("boolean") == 0) {
+                            std::cout<< anonymous_string<< std::endl;
+
+                            if(CFG().is_condition(anonymous_string.c_str())) {
+                                unpack_condition(anonymous_string, RESPECTIVE_NODE);
+                            }
+                        }
+
                     }
                     // string var_name = term_stack
                 }
@@ -228,7 +306,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
         } else {
 
-            bool arithmetic_op_found;
+            bool arithmetic_op_found = false;
             for(int i=0; i<stack_size; i++) {
 
                 for(int x=0; x<4; x++) {

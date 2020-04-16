@@ -7,6 +7,8 @@ import java.util.FileReader;
 public class Legendary {
 
     public int subjectSize = 5;
+    public String myString = "Legends they never die";
+    public boolean myBoolean = false;
 
     public int findAverage() {
         int mathematics = 78;
@@ -15,6 +17,8 @@ public class Legendary {
         int science = 84;
         int ssre = 64;
         int i = 0;
+        boolean secondBool = (kiswahili >= english && science < ssre || mathematics < science);
+        String mySecondString = "Legends";
 
         while(i < subjectSize) {
             int term = mathematics + english + kiswahili + science + ssre;

@@ -37,7 +37,7 @@ CFG::CFG() {
                                     MINI_JAVA.insert(pair<string, string>("comparator", "~!~==~>~<~>=~<=~!="));
                         MINI_JAVA.insert(pair<string, string>("while", "~while%s%*%condition%%s%*{%block_code%}"));
             MINI_JAVA.insert(pair<string, string>("class_variable_declaration", "%type_defined%%s%%property_name%%s%*=%s%*%value%"));
-                MINI_JAVA.insert(pair<string, string>("value", "%property_name%|%string_definition%|%equation_definition%"));
+                MINI_JAVA.insert(pair<string, string>("value", "%property_name%|%string_definition%|%equation_definition%|%boolean%"));
                     MINI_JAVA.insert(pair<string, string>("string_definition", "~\"%anything%\""));
                         MINI_JAVA.insert(pair<string, string>("anything", anything_string));
                     MINI_JAVA.insert(pair<string, string>("equation_definition", "%number%+%s%+%equation_sign%%s%+%number%+"));
@@ -127,23 +127,23 @@ bool CFG::is_package_name(const char* source_code) {
                     word = "";
                     if(source_code[CURSOR + 1] == '.') {
                         is_pkg = false;
-                        cout<< "Two dots should not follow each other in a package declaration: \""<< source_code<< endl;
+                        // cout<< "Two dots should not follow each other in a package declaration: \""<< source_code<< endl;
                     }
                 }
             } else {
                 word += source_code[CURSOR];
             }
 
-            (CURSOR)++;
+            CURSOR++;
         }
 
         is_pkg = is_word(word.c_str());
 
     } else if(source_code[CURSOR] == '.'){
-        cout<< "Package name cannot begin with '.'"<< endl;
+        // cout<< "Package name cannot begin with '.'"<< endl;
         is_pkg = false;
     } else {
-        cout<< "Package name cannot be empty"<< endl;
+        // cout<< "Package name cannot be empty"<< endl;
         is_pkg = false;
     }
 
@@ -157,9 +157,10 @@ bool CFG::is_word(const char* source_code) {
     bool toggle = true;
     string word = "";
     int CURSOR = 0;
-    // while(toggle) { // game loop
+
     while(source_code[CURSOR] != '\0') {
         bool found = false;
+
         for(int i=0; i<52; i++) {
             if(source_code[CURSOR] == letters[i]) {
                 found = true;

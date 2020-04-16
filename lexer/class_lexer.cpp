@@ -38,7 +38,7 @@ void Lexer::unpack_class(string code) {
 
                     //handle token addition
                     class_declaration.add_children(Node(false, "access_modifier", access_modifier));
-                    cout<< "Access modifier for a\033[1;21m"<< access_modifier<< "\033[0m added"<< endl;
+                    cout<< "Access modifier for a \033[1;21m"<< access_modifier<< "\033[0m class added"<< endl;
 
                     while(code[CURSOR] == ' ') { // white space eliminator
                         CURSOR++;
