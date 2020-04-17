@@ -285,7 +285,7 @@ Node FunctionTable::scan_function(string source_code, int& BLOCK_CURSOR) {
         if(!am_found) {
             error_message = "Invalid access modifier \033[1;21;31";
             error_message += access_modifier;
-            error_message += "\033[0m"
+            error_message += "\033[0m";
         } else {
             error_message = "Invalid return type or function name in function: \033[1;21m";
             error_message += function_name;

@@ -8,6 +8,7 @@ SymbolTable::SymbolTable() {
     UNDEFINED[2] = "undefined";
 }
 
+
 void SymbolTable::add_member(string value, string type, string context) {
     string* new_member = new string[3];
     new_member[0] = value;
