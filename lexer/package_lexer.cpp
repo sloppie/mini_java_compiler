@@ -7,10 +7,8 @@ void Lexer::unpack_package(string source_code, string package_type) {
 
     if(package_type.compare("package") == 0) {
         package_declaration = new Node(false, "user_package_declaration");
-        // cout<< "Unpacking package declaration..."<< endl;
     } else {
         package_declaration = new Node(false, "import_declaration");
-        // cout<< "Unpacking import declaration..."<< endl;
     }
 
     const char* code = source_code.c_str();

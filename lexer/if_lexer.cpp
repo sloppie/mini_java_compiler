@@ -101,12 +101,11 @@ void Lexer::unpack_if(string code, Node* RESPECTIVE_NODE) {
 
 
 void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
+    // create Node data structure to hold the data for the parse tree
     Node if_else(false, "if_else");
     const char* if_code = code.c_str();
     bool opening_term = false;
     string term = "";
-
-    // create Node data structure to hold the data for the parse tree
 
     while(if_code[CURSOR] != '\0') {
         term += if_code[CURSOR];
@@ -122,10 +121,11 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
         CURSOR++;
     }
 
-    if(opening_term) {
+    if(opening_term) { // if the if terminal was found
+        // find the condition param
         string condition = Lexer::find_bracketed_code(code, '(', CURSOR);
+        // find the block code
         string block_code = Lexer::find_bracketed_code(code, '{', CURSOR);        
-        // cout<< block_code<< endl;
         unpack_condition(condition, &if_else);
         Node if_block_node(false, "block_code");
         unpack_block(block_code, &if_block_node);

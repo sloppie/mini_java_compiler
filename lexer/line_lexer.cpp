@@ -3,6 +3,9 @@
 #include "../utilities/data_structures/node.h"
 
 
+// This is the heart of the Lexer process as close to all things resort to using this to unpack
+// a single line. It handles mathematical equations and variable assignments for variables of type:
+// String, boolean, int, double, float
 void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
     // creates all the error messages found in the line
     string error_message;
@@ -20,7 +23,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
     string equation_tokens[] = {"*", "/", "+", "-"};
 
-    if(is_function_call(source_code)) {
+    if(is_function_call(source_code)) { // this means that the whole line was just a function being called
         unpack_function_call(source_code, RESPECTIVE_NODE);
     } else {
 
@@ -28,10 +31,12 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
             if(line[LINE_CURSOR] == ' ') {
                 
+                // check for assignment
                 if(term_found.compare("=") == 0) {
                     breakout_index = CURSOR + 1;
                     is_assignment = true;
-                    is_init_assignment = (term_stack.size() == 2);
+                    // is it is equal to two, means there is the type and the var_name in the stack, thus is an initial assignment
+                    is_init_assignment = (term_stack.size() == 2); 
                 } else if(is_assignment) {
                     second_part.enqueue(term_found);
                 }
@@ -60,6 +65,7 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
             int second_stack_size = second_part.size();
 
             bool arithmetic_op_found = false;
+
             for(int i=0; i<second_stack_size; i++) {
 
                 for(int x=0; x<4; x++) {
@@ -74,202 +80,185 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
                     break;
             
             }
-                if(arithmetic_op_found) {
 
-                    if(is_init_assignment) {
-                        string type = term_stack.get_queue().at(0);
-                        string var_name = term_stack.get_init_queue().at(1);
-                        if(!is_defined) {
-                            RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
-                            cout<< "\033[1;21m"<< type<<"\033[0m token(type_definition) added"<< endl;
-                            SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
-                            cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
-                            RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
-                            RESPECTIVE_NODE->add_children(Node(true, "="));
-                            cout<< "\033[1;21m=\033[0m tokken added"<< endl;
-                            unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
-                            is_defined = true;
-                        }
+            if(arithmetic_op_found) { // handle arithmetic equations
+
+                if(is_init_assignment) {
+                    string type = term_stack.get_queue().at(0);
+                    string var_name = term_stack.get_init_queue().at(1);
+                    
+                    is_defined = (SYMBOL_TABLE->find(var_name)[0].compare("undefined") != 0);
+
+                    if(!is_defined) {
+                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                        cout<< "\033[1;21m"<< type<<"\033[0m token(type_definition) added"<< endl;
+                        SYMBOL_TABLE->add_member(var_name, type, "FUNCTIONAL_CONTEXT");
+                        cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                        RESPECTIVE_NODE->add_children(Node(true, "="));
+                        cout<< "\033[1;21m=\033[0m tokken added"<< endl;
+                        unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
+                        is_defined = true;
                     } else {
-                        string var_name = term_stack.get_queue().at(0);
-                        string type = SYMBOL_TABLE->find(var_name)[1];
+                        error_message = "The variable named: \033[1;21m";
+                        error_message += var_name;
+                        error_message += "\033[0m has already been defined";
 
-                        if(type.compare("undefined") == 0) {
-                            error_message = "The variable \033[1;21m";
-                            error_message += var_name;
-                            error_message += "\033[0m is undefined";
-
-                            (*ERROR_STREAM)<< error_message;
-                        } else {
-                            RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
-                            cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
-                            RESPECTIVE_NODE->add_children(Node(true, "="));
-                            cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
-                            // unpack_arithmetic_eq(term_stack, type, RESPECTIVE_NODE);
-                            unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
-                        }
+                        (*ERROR_STREAM)<< error_message;
                     }
 
                 } else {
-                    string type = term_stack.get_init_queue().at(0);
+                    string var_name = term_stack.get_queue().at(0);
+                    string type = SYMBOL_TABLE->find(var_name)[1];
 
-                    if(is_init_assignment) { // add tokens
-                        if(!is_defined) {
-                            RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
-                            cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
-                            RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
-                            cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
-                            RESPECTIVE_NODE->add_children(Node(true, "="));
-                            SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
-                            is_defined = true;
-                        }
+                    if(type.compare("undefined") == 0) {
+                        error_message = "The variable \033[1;21m";
+                        error_message += var_name;
+                        error_message += "\033[0m is undefined";
+
+                        (*ERROR_STREAM)<< error_message;
                     } else {
-                        RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(0)));
-                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(variable_name_definition) added"<< endl;
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", var_name));
+                        cout<< "\033[1;21m"<< var_name<<"\033[0m token(variable_name_definition) added"<< endl;
                         RESPECTIVE_NODE->add_children(Node(true, "="));
                         cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
+                        unpack_arithmetic_eq(second_part, type, RESPECTIVE_NODE);
                     }
-                    
-                    if(second_stack_size == 1) {
-                        string assigned = second_part.get_init_queue().at(0);
-                        if(type.compare("String") == 0) 
-                            std::cout<< "This is the String: "<< assigned<< std::endl;
+                }
 
-                        if(is_function_call(assigned)) {
-                            int i = 0;
-                            const char* function_code = assigned.c_str();
-                            string function_name = "";
+            } else { // if no arithmetic operation is found, it means it is just a variable initialisation or reinitialisation
+                string type = term_stack.get_init_queue().at(0);
 
-                            while(function_code[i] != ' ' && function_code[i] != '(') {
-                                function_name += function_code[i];
-                            }
+                if(is_init_assignment) { // add tokens
+                    // check if the variable is already in the SYMBOL_TABLE to avoid redefinition
+                    is_defined = (SYMBOL_TABLE->find(term_stack.get_init_queue().at(1))[0].compare("undefined") != 0);
 
-                            // also handle the funtion call itself
+                    if(!is_defined) {
+                        RESPECTIVE_NODE->add_children(Node(false, "type_defined", term_stack.get_init_queue().at(0)));
+                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(type_definition) added"<< endl;
+                        RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
+                        cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(variable_name_definition) added"<< endl;
+                        RESPECTIVE_NODE->add_children(Node(true, "="));
+                        SYMBOL_TABLE->add_member(term_stack.get_init_queue().at(1), type, "FUNCTIONAL_CONTEXT");
+                        is_defined = true;
+                    } else {
+                        error_message = "The variable \033[1;21m";
+                        error_message += term_stack.get_init_queue().at(1);
+                        error_message += "\033[0m has already been defined";
 
-                            string* function_details = FUNCTION_TABLE->find(function_name);
+                        (*ERROR_STREAM)<< error_message;
+                    }
 
-                            if(function_details[1].compare(type) == 0) {
-                                //handle successful token
-                                // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
-                                RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
-                                cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(function_call) added"<< endl;
+                } else {
+                    RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(0)));
+                    cout<< "\033[1;21m"<< term_stack.get_init_queue().at(0)<<"\033[0m token(variable_name_definition) added"<< endl;
+                    RESPECTIVE_NODE->add_children(Node(true, "="));
+                    cout<< "\033[1;21m=\033[0m token(assignment_token) added"<< endl;
+                }
+                
+                if(second_stack_size == 1) { // type checking block
+                    string assigned = second_part.get_init_queue().at(0);
+                    if(type.compare("String") == 0) 
+                        std::cout<< "This is the String: "<< assigned<< std::endl;
+
+                    if(is_function_call(assigned)) {
+                        int i = 0;
+                        const char* function_code = assigned.c_str();
+                        string function_name = "";
+
+                        while(function_code[i] != ' ' && function_code[i] != '(') {
+                            function_name += function_code[i];
+                        }
+
+                        // also handle the funtion call itself
+
+                        string* function_details = FUNCTION_TABLE->find(function_name);
+
+                        if(function_details[1].compare(type) == 0) {
+                            //handle successful token
+                            // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                            RESPECTIVE_NODE->add_children(Node(false, "function_call", term_stack.get_init_queue().at(1)));
+                            cout<< "\033[1;21m"<< term_stack.get_init_queue().at(1)<<"\033[0m token(function_call) added"<< endl;
+                        } else {
+                            error_message = "Conflicting types. The function \033[1;0m";
+                            error_message += function_name;
+                            error_message += "\033[0m returns \033[1;21m";
+                            error_message += function_details[1];
+                            error_message += "\033[0m expected \033[1;0m";
+                            error_message += type;
+                            error_message += "\033[0m";
+
+                            (*ERROR_STREAM)<< error_message;
+                        }
+
+                    } else if(CFG().is_word(assigned.c_str())) {
+                        string* var_details = SYMBOL_TABLE->find(assigned);
+
+                        if(var_details[1].compare(type) == 0) {
+                            //handle successful token
+                            // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
+                            RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
+                            cout<< "\033[1;21m"<< var_details[0]<< "\033[0m token added"<< endl;
+                        } else {
+                            if(type.compare("boolean") == 0) {
+                                std::cout<< "Unpacking boolean"<< std::endl;
+
+                                if(assigned.compare("false") == 0 || assigned.compare("true") == 0) {
+                                    RESPECTIVE_NODE->add_children(Node(false, "boolean", assigned));
+                                }
+
                             } else {
-                                error_message = "Conflicting types. The function \033[1;0m";
-                                error_message += function_name;
-                                error_message += "\033[0m returns \033[1;21m";
-                                error_message += function_details[1];
-                                error_message += "\033[0m expected \033[1;0m";
+                                error_message = "\033[1;0mConflicting types error\033[0m: the variable";
+                                error_message += assigned;
+                                error_message += " is of type: ";
+                                error_message += var_details[0];
+                                error_message += " expected: \033[1;21";
                                 error_message += type;
                                 error_message += "\033[0m";
 
                                 (*ERROR_STREAM)<< error_message;
                             }
+                            // cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
+                        }
 
-                        } else if(CFG().is_word(assigned.c_str())) {
-                            string* var_details = SYMBOL_TABLE->find(assigned);
-
-                            if(var_details[1].compare(type) == 0) {
-                                //handle successful token
-                                // RESPECTIVE_NODE->add_children(Node(false, "type_defined", type));
-                                RESPECTIVE_NODE->add_children(Node(false, "property_name", term_stack.get_init_queue().at(1)));
-                                cout<< "\033[1;21m"<< var_details[0]<< "\033[0m token added"<< endl;
+                    } else { // being initialised to a terminal value
+                        if(type.compare("float") == 0 || type.compare("double") == 0) {
+                            if(CFG().is_decimal(assigned.c_str())) {
+                                string new_float = type;
+                                new_float += assigned;
+                                RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
+                                cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
                             } else {
-                                if(type.compare("boolean") == 0) {
-                                    std::cout<< "Unpacking boolean"<< std::endl;
+                                error_message = "Invalid type: \033[1;21m";
+                                error_message += assigned;
+                                error_message += "\033[0m is not of type ";
+                                error_message += type;
 
-                                    if(assigned.compare("false") == 0 || assigned.compare("true") == 0) {
-                                        RESPECTIVE_NODE->add_children(Node(false, "boolean", assigned));
-                                    }
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "Invalid type"<< endl;
+                            }
+                        } else if(type.compare("int") == 0) {
 
-                                } else {
-                                    error_message = "\033[1;0mConflicting types error\033[0m: the variable";
-                                    error_message += assigned;
-                                    error_message += " is of type: ";
-                                    error_message += var_details[0];
-                                    error_message += " expected: \033[1;21";
-                                    error_message += type;
-                                    error_message += "\033[0m";
+                            if(CFG().is_int(assigned.c_str())) {
+                                string new_float = type;
+                                new_float += assigned;
+                                RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
+                                cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
+                            } else {
+                                error_message = "Invalid type: \033[1;21m";
+                                error_message += assigned;
+                                error_message += "\033[0m is not of type ";
+                                error_message += type;
 
-                                    (*ERROR_STREAM)<< error_message;
-                                }
-                                // cout<< "conflicting types error: the variable \""<< assigned<< "\" is of type "<< var_details[0]<< "expected: "<< type<< endl;
+                                (*ERROR_STREAM)<< error_message;
+                                // cout<< "Invalid type"<< endl;
                             }
 
-                        } else { // being initialised to a terminal value
-                            if(type.compare("float") == 0 || type.compare("double") == 0) {
-                                if(CFG().is_decimal(assigned.c_str())) {
-                                    string new_float = type;
-                                    new_float += assigned;
-                                    RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
-                                    cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
-                                } else {
-                                    error_message = "Invalid type: \033[1;21m";
-                                    error_message += assigned;
-                                    error_message += "\033[0m is not of type ";
-                                    error_message += type;
-
-                                    (*ERROR_STREAM)<< error_message;
-                                    // cout<< "Invalid type"<< endl;
-                                }
-                            } else if(type.compare("int") == 0) {
-
-                                if(CFG().is_int(assigned.c_str())) {
-                                    string new_float = type;
-                                    new_float += assigned;
-                                    RESPECTIVE_NODE->add_children(Node(false, "number", new_float));
-                                    cout<< "\033[1;21m"<< type<< "\033[0m token added"<< assigned<< endl;
-                                } else {
-                                    error_message = "Invalid type: \033[1;21m";
-                                    error_message += assigned;
-                                    error_message += "\033[0m is not of type ";
-                                    error_message += type;
-
-                                    (*ERROR_STREAM)<< error_message;
-                                    // cout<< "Invalid type"<< endl;
-                                }
-
-                            } else if(type.compare("String") == 0) {
-                                std::cout<< "Unpacking String: "<< assigned<< std::endl;
-                                std::string string_definition = "";
-                                int STRING_CURSOR = 0;
-                                const char* assigned_str = assigned.c_str();
-                                bool opening_quote = false;
-
-                                while(assigned_str[STRING_CURSOR] != '\0') {
-                                    
-                                    if(assigned_str[STRING_CURSOR] == '"') {
-                                    
-                                        if(!opening_quote)
-                                            opening_quote = true;
-                                        else
-                                            break;
-                                        
-                                    } else {
-                                        string_definition += assigned_str[STRING_CURSOR];
-                                    }
-
-                                    STRING_CURSOR++;
-                                }
-
-                                RESPECTIVE_NODE->add_children(Node(false, "string_definition", string_definition));
-
-                            }
-                        }
-                    } else {
-                        std::string anonymous_string = "";
-
-                        for(int i=0; i<second_stack_size; i++) {
-                            anonymous_string += second_part.get_init_queue().at(i);
-                            
-                            if(i != (second_stack_size - 1))
-                                anonymous_string += ' ';
-                        }
-
-                        if(type.compare("String") == 0) {
-
+                        } else if(type.compare("String") == 0) {
+                            std::cout<< "Unpacking String: "<< assigned<< std::endl;
                             std::string string_definition = "";
                             int STRING_CURSOR = 0;
-                            const char* assigned_str = anonymous_string.c_str();
+                            const char* assigned_str = assigned.c_str();
                             bool opening_quote = false;
 
                             while(assigned_str[STRING_CURSOR] != '\0') {
@@ -290,21 +279,56 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
                             RESPECTIVE_NODE->add_children(Node(false, "string_definition", string_definition));
 
-                        } else if(type.compare("boolean") == 0) {
-                            std::cout<< anonymous_string<< std::endl;
+                        }
+                    }
+                } else {
+                    std::string anonymous_string = "";
 
-                            if(CFG().is_condition(anonymous_string.c_str())) {
-                                unpack_condition(anonymous_string, RESPECTIVE_NODE);
+                    for(int i=0; i<second_stack_size; i++) {
+                        anonymous_string += second_part.get_init_queue().at(i);
+                        
+                        if(i != (second_stack_size - 1))
+                            anonymous_string += ' ';
+                    }
+
+                    if(type.compare("String") == 0) {
+
+                        std::string string_definition = "";
+                        int STRING_CURSOR = 0;
+                        const char* assigned_str = anonymous_string.c_str();
+                        bool opening_quote = false;
+
+                        while(assigned_str[STRING_CURSOR] != '\0') {
+                            
+                            if(assigned_str[STRING_CURSOR] == '"') {
+                            
+                                if(!opening_quote)
+                                    opening_quote = true;
+                                else
+                                    break;
+                                
+                            } else {
+                                string_definition += assigned_str[STRING_CURSOR];
                             }
+
+                            STRING_CURSOR++;
                         }
 
-                    }
-                    // string var_name = term_stack
-                }
-                
-            // }
+                        RESPECTIVE_NODE->add_children(Node(false, "string_definition", string_definition));
 
-        } else {
+                    } else if(type.compare("boolean") == 0) {
+                        std::cout<< anonymous_string<< std::endl;
+
+                        if(CFG().is_condition(anonymous_string.c_str())) {
+                            unpack_condition(anonymous_string, RESPECTIVE_NODE);
+                        }
+                    }
+
+                }
+            }
+                
+
+        } else { // handles arithmetic equations that are do not have any assignment
 
             bool arithmetic_op_found = false;
             for(int i=0; i<stack_size; i++) {
@@ -421,6 +445,8 @@ void Lexer::unpack_line(string source_code, Node* RESPECTIVE_NODE) {
 
 
 void Lexer::unpack_arithmetic_eq(Queue<string> equation, string NUMBER_TYPE, Node* RESPECTIVE_NODE) {
+    // This function uses the previous, and current and the mathematical operad to base all its jugements
+    // on whether the equation is right
     CFG cfg;
     int QUEUE_SIZE = equation.size();
     string values[QUEUE_SIZE];
@@ -786,7 +812,6 @@ bool Lexer::is_equation_token(string token) {
 
 
 void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
-    cout<< "Unpacking function call..."<< endl;
     const char* fc = function_call.c_str();
     string function_name = "";
     string function_param = "";
@@ -859,7 +884,6 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
                 arg_type = SYMBOL_TABLE->find(function_args.at(i))[1];
 
                 if(function_params.dequeue(default_return)[1].compare(arg_type) == 0) {
-                    // ritght argument code :)
                     Node arg(false, "arguments", function_args.at(i));
                     fn_call.add_children(arg);
                 } else {
@@ -870,7 +894,6 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
                     error_message += function_params.get_init_queue().at(i)[1];
 
                     (*ERROR_STREAM)<< error_message;
-                    // cout<< "Argument"<< i + 1<< "for function \""<< function_name<< "\" is supposed to be of type: "<< function_params.get_init_queue().at(i)[1]<< endl;
                 }
 
             }
@@ -889,10 +912,6 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
                 error_message += "\033[0m";
 
                 (*ERROR_STREAM)<< error_message;
-                // cout<< "ERROR:"<< endl;
-                // cout<< "    Expected "<< function_params.size()<< " arguments. Instead gt: "<< function_args.size()<< endl;
-                // // insert template example here
-                // cout<< "    Function Template: "<< FUNCTION_TABLE->create_function_template(function_name)<< endl;
             }
         }
 
@@ -905,7 +924,6 @@ void Lexer::unpack_function_call(string function_call, Node* RESPECTIVE_NODE) {
         error_message += "\033[0m called";
 
         (*ERROR_STREAM)<< error_message;
-        //cout<< "UNDEFINED function called: "<< endl<< "  Name: "<< function_name<< endl;
     }
     
 }

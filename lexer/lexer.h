@@ -32,7 +32,7 @@ class Lexer {
                                          TOKEN_STREAM(TOKEN_STREAM),
                                          ERROR_STREAM(ERROR_STREAM) {}
 
-        // unpacks packed code with regard to the bracket passed in arg_2
+        // unpacks packed code with regard to the bracket passed in @arg_2
         // the source code is passed to the function and also the the CURSOR
         // is passed by reference to the function as psuedo-control-pass method
         static string find_bracketed_code(string, char, int&);
@@ -78,6 +78,7 @@ class Lexer {
         // unpacks condition statements and refuses implementation of nested conditions
         // this is done with the help of Lexer::break_down_condition
         void unpack_condition(string, Node*);
+        // breaks down a single condition block e.g: 23 >= 67 is a sngle condition that could be unpacked
         vector<string> break_down_condition(const char*, Node*);
 
 

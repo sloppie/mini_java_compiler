@@ -16,6 +16,7 @@ void Lexer::unpack_class(string code) {
 
     const char* class_code = code.c_str();
 
+    // this is loop is used to find: access mmodifier, class_name, opening_brace, cvd, function_declarations and closing brace
     while(class_code[CURSOR] != '\0') {
 
         if((term_found.compare("") == 0) && (class_code[CURSOR] == ' ' || class_code[CURSOR] == '\n' || class_code[CURSOR] == '\t')) {
@@ -29,14 +30,13 @@ void Lexer::unpack_class(string code) {
             continue;
 
         } else if(code[CURSOR] == ' ') {
-                cout<< term_found<< endl;
+                // class access modifier
                 if(term_found.compare("public") == 0 || term_found.compare("private") == 0 || term_found.compare("protected") == 0) { // handle conditionals
                     int FUNCTION_BRANCH;
                     int VARIABLE_DEC_BRANCH;
                     access_modifier = term_found;
                     bool is_func = false;
 
-                    //handle token addition
                     class_declaration.add_children(Node(false, "access_modifier", access_modifier));
                     cout<< "Access modifier for a \033[1;21m"<< access_modifier<< "\033[0m class added"<< endl;
 
@@ -50,6 +50,7 @@ void Lexer::unpack_class(string code) {
                         CURSOR++;
                     }
 
+                    // verify the finding of the class token
                     if(class_token.compare("class") == 0) {
                         class_declaration.add_children(Node(true, "class"));
                         cout<< "\033[1;21mclass\033[0m token added"<< endl;
@@ -69,6 +70,7 @@ void Lexer::unpack_class(string code) {
                         CURSOR++;
                     }
 
+                    // verify the class name
                     if(CFG().is_word(class_name.c_str())) {
                         // handle class name to package table
                         class_declaration.add_children(Node(false, "class_name", class_name));
@@ -85,6 +87,7 @@ void Lexer::unpack_class(string code) {
                         CURSOR++;
                     }
 
+                    // class opening curly brace
                     if(code[CURSOR] == '{') {
                         // handle terminal addition
                         cout<< "\033[1;21m{\033[0m token added"<< endl;
@@ -97,7 +100,9 @@ void Lexer::unpack_class(string code) {
                         (*ERROR_STREAM)<< error_message;
                         error_message = "";
                     }
+
                 }
+
             } else {
                 term_found += code[CURSOR];
             }
@@ -107,6 +112,7 @@ void Lexer::unpack_class(string code) {
 
     term_found = "";
 
+    // finds the class variable definitions and function_declarations
     while(class_code[CURSOR] != '\0') {
 
         if(term_found.compare("") == 0 && (class_code[CURSOR] == ' ' || class_code[CURSOR] == '\n' || class_code[CURSOR] == '\t')) {
@@ -120,9 +126,15 @@ void Lexer::unpack_class(string code) {
             continue;
 
         } else if(code[CURSOR] == ' ') {
-
+                
+                // finds the access_modifier of the class_variable_declaration or function_declaration 
                 if(term_found.compare("public") == 0 || term_found.compare("private") == 0 || term_found.compare("protected") == 0) { // handle conditionals
+                    // scanning calls for the creation of two branches:
+                    // The function branch helps reset to the initial position so that if it is a function it is handed over
+                    // to the FunctionTable::scan_function method
                     int FUNCTION_BRANCH;
+                    // This branch recodrs the current position right after the access modifier so that if it is a cvd,
+                    // it is passes as a line to Lexer::unpack_line method.
                     int VARIABLE_DEC_BRANCH;
                     bool is_func = false;
 
@@ -157,12 +169,6 @@ void Lexer::unpack_class(string code) {
                             class_declaration.add_children(function_declaration);
                         }
 
-                        // below is the piece of code that will be used to pass function calls 
-                        // if they are to be allowed to the class declaration phase
-                        // if(is_func) {
-                        //     is_func = class_code[CURSOR] == ';';
-                        // }
-
                         CURSOR++;
                     }
 
@@ -182,7 +188,6 @@ void Lexer::unpack_class(string code) {
                         if(code[CURSOR] == '\n') {
                             error_message = "Expected \033[1;21m';'\033[0m before skipping to a new line";
                             (*ERROR_STREAM)<< error_message;
-                            // cout<< "Error in line Expected ';' at the end of line"<< endl;
                         } else {
                             Node class_var_dec(false, "class_variable_declaration");
                             class_var_dec.add_children(Node(false, "access_modifier", access_modifier));
@@ -211,13 +216,6 @@ void Lexer::unpack_class(string code) {
                     }
 
                 } else {
-                    // !TODO add error handling
-                    // if(term_found.compare("}") == 0) {
-                    //     Node closing_brace(true, "}");
-                    //     class_declaration.add_children(closing_brace);
-                    //     class_closed = true;
-                    //     break;
-                    // }
                 }
 
 

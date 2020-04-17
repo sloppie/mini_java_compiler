@@ -94,9 +94,12 @@ bool Lexer::is_function_call(string current) {
     bool closing_bracket = false;
     string function_name = "";
 
+    // basically checks for opening and closing brackets and the lack of the equals sign
     while(function_call[CURSOR_TRACK] != '\0') {
 
         if(!opening_bracket) {
+            // the below control dtructure chucks out code that may be mistaken for function calls just by
+            // the presence of brackets
             if(function_call[CURSOR_TRACK] == '=')
                 break;
 

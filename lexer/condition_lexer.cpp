@@ -18,6 +18,7 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
     // offload conditions
     while(condition[CURSOR] != '\0') {
         
+        // ensure the coreect progression of the symbols, to avoid mix up in the case of a symbol such as: &| or |&
         if(condition[CURSOR] == '&' || condition[CURSOR] == '|') {
 
             if(condition[CURSOR] == '&') {
@@ -32,10 +33,9 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
                     error_message += "\033[0m\"";
 
                     (*ERROR_STREAM)<< error_message;
-                    // cout<< "Expected '&&' as a connector after condition: "<< condition<< endl;
                 }
 
-            } else {// handle or connector
+            } else { // handle or connector
  
                 if(condition[CURSOR + 1] == '|') {
                     condition_queue.enqueue(condition_found);
@@ -54,7 +54,7 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
 
             CURSOR += 2;
             continue;
-        } else {
+        } else { // block handlin creating of term nodes and skipping over nested conditions
 
             if(condition[CURSOR] != '(') {
 
@@ -98,10 +98,7 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
         string cnd = "";
         
         if(conditions.compare("&&") != 0 && conditions.compare("||") != 0) {
-            Node new_condition(false, "tested_condition");
-            // break_down_condition(conditions.c_str(), &new_condition);
             break_down_condition(conditions.c_str(), &CONDITION);
-            // CONDITION.add_children(new_condition);
         } else {
             CONDITION.add_children(Node(true, "connector", conditions));
         }
@@ -114,7 +111,6 @@ void Lexer::unpack_condition(string source_code, Node* CONDITION_CARRIER) {
 }
 
 
-// utiltiies
 vector<string> Lexer::break_down_condition(const char* condition, Node* CONDITION) {
     Node condn(false, "tested_condition");
     CFG cfg;
