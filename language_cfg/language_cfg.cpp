@@ -119,7 +119,7 @@ bool CFG::is_package_name(const char* source_code) {
         string package_name = "";
         string word = "";
 
-        while(source_code[CURSOR] != ' ' && source_code[CURSOR] != ';') {
+        while(source_code[CURSOR] != ' ' && source_code[CURSOR] != ';' && source_code[CURSOR] != '\0') {
             package_name += source_code[CURSOR];
 
             if(source_code[CURSOR] == '.') {
@@ -127,10 +127,11 @@ bool CFG::is_package_name(const char* source_code) {
                 if(is_pkg) {
                     is_pkg = is_word(word.c_str());
                     word = "";
+
                     if(source_code[CURSOR + 1] == '.') {
                         is_pkg = false;
-                        // cout<< "Two dots should not follow each other in a package declaration: \""<< source_code<< endl;
                     }
+
                 }
             } else {
                 word += source_code[CURSOR];
@@ -153,7 +154,8 @@ bool CFG::is_package_name(const char* source_code) {
 
 bool CFG::is_word(const char* source_code) {
     char letters[52] = {'a', 'A', 'b', 'B', 'c', 'C', 'd', 'D', 'e', 'E', 'f', 'F', 'g', 'G', 'h', 'H', 'i', 'I', 'j', 'J', 'k', 'K', 'l', 'L', 'm', 'M', 'n', 'N', 'o', 'O', 'p', 'P', 'q', 'Q', 'r', 'R', 's', 'S', 't', 'T', 'u', 'U', 'v', 'V', 'w', 'W', 'x', 'X', 'y', 'Y', 'z', 'Z'};
-    bool is_word = true;
+    std::string NULL_STR = "";
+    bool is_word = (NULL_STR.compare(source_code) != 0)? true: false;
     bool toggle = true;
     string word = "";
     int CURSOR = 0;
