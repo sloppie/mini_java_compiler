@@ -185,7 +185,6 @@ void Lexer::unpack_if(int& CURSOR, string code, Node* RESPECTIVE_NODE) {
                 } else {
                     CURSOR = RESET_CURSOR;
                     string else_block = Lexer::find_bracketed_code(code, '{', CURSOR);
-                    std::cout<< else_block<< std::endl;
                     if_else.add_children(Node(true, "else"));
                     Node else_block_node(false, "block_code");
                     unpack_block(else_block, &else_block_node);
