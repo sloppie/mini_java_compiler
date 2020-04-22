@@ -1,4 +1,16 @@
 # MINI JAVA COMPILER
+## Running The Compiler
+This comiler was initially made on a linux os, thus other OSes were not considered whn thinking of how it would be run.
+If on linux:
+- Ensure you have the `g++` compiler for cpp
+    - if not, follow the instructions on how to install it on your linux distribution
+- run the below commands:
+```bash
+# this compiles all the code
+g++ utilities/*.cpp language_cfg/*.cpp lexer/*.cpp parser/*.cpp code_gen/*.cpp -o main
+# run the compiler
+./main
+```
 ## INTRODUCTION
 This was part of a project to create a mini Java compiler that is able to generate intermediate code for translation to machine code from code that follows the Java syntax.
 The compiler mainly consists of four main parts:
